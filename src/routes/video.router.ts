@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Response } from 'express';
 import { db } from '../db/db';
 import { createVideoModelValidation, updateVideoModelValidation } from '../helpers/videoModelValidation';
 import { CreateVideoModel, UpdateVideoModel, Video } from '../types/model/Video';
