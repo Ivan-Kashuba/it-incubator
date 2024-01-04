@@ -93,7 +93,7 @@ videoRouter.put(
       canBeDownloaded: req.body.canBeDownloaded || false,
       minAgeRestriction: req.body.minAgeRestriction || null,
       createdAt: videoToUpdate.createdAt,
-      publicationDate: videoToUpdate.publicationDate,
+      publicationDate: req.body.publicationDate || videoToUpdate.publicationDate,
       availableResolutions: req.body.availableResolutions || [],
     };
 
