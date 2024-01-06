@@ -1,9 +1,18 @@
 import express, { Response } from 'express';
-import { db } from '../db/db';
-import { createVideoModelValidation, updateVideoModelValidation } from '../helpers/videoModelValidation';
-import { CreateVideoModel, UpdateVideoModel, Video } from '../types/model/Video';
-import { addDaysToDate } from '../helpers/addDaysToDate';
-import { RequestWithBody, RequestWithParams, RequestWithParamsAndBody, RequestWithQuery } from '../types';
+import { localDb } from '../db/local-db';
+import {
+  createVideoModelValidation,
+  updateVideoModelValidation,
+} from '../features/videos/helpers/videoModelValidation';
+import { CreateVideoModel, UpdateVideoModel, Video } from '../features/videos/types/model/Video';
+import { addDaysToDate } from '../shared/helpers/addDaysToDate';
+import {
+  RequestWithBody,
+  RequestWithParams,
+  RequestWithParamsAndBody,
+  RequestWithQuery,
+  STATUS_HTTP,
+} from '../shared/types';
 
 export const videoRouter = express.Router();
 
@@ -11,29 +20,29 @@ videoRouter.get('/', (req: RequestWithQuery<{ title?: string }>, res: Response<V
   const titleToFind = req?.query?.title;
 
   if (!titleToFind) {
-    res.status(200).send(db.videos);
+    res.status(STATUS_HTTP.OK_200).send(localDb.videos);
     return;
   }
 
-  const foundedVideos = db.videos.filter((video) => {
+  const foundedVideos = localDb.videos.filter((video) => {
     return video.title.includes(titleToFind);
   });
 
-  res.status(200).send(foundedVideos);
+  res.status(STATUS_HTTP.OK_200).send(foundedVideos);
 });
 videoRouter.get('/:videoId', (req: RequestWithParams<{ videoId: string }>, res: Response<Video>) => {
   const videoId = req.params.videoId;
 
-  const foundedVideo = db.videos.find((p) => {
+  const foundedVideo = localDb.videos.find((p) => {
     return p.id === +videoId;
   });
 
   if (!foundedVideo) {
-    res.sendStatus(404);
+    res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
     return;
   }
 
-  res.status(200).send(foundedVideo);
+  res.status(STATUS_HTTP.OK_200).send(foundedVideo);
 });
 videoRouter.post('/', createVideoModelValidation, (req: RequestWithBody<CreateVideoModel>, res: Response<Video>) => {
   const { title, author, availableResolutions } = req.body;
@@ -49,27 +58,27 @@ videoRouter.post('/', createVideoModelValidation, (req: RequestWithBody<CreateVi
     availableResolutions: availableResolutions || [],
   };
 
-  db.videos.push(newVideo);
+  localDb.videos.push(newVideo);
 
-  res.status(201).send(newVideo);
+  res.status(STATUS_HTTP.CREATED_201).send(newVideo);
 });
 videoRouter.delete('/:videoId', (req: RequestWithParams<{ videoId: string }>, res: Response<void>) => {
   const videoId = req.params.videoId;
 
-  const videoToDelete = db.videos.find((video) => {
+  const videoToDelete = localDb.videos.find((video) => {
     return video.id === +videoId;
   });
 
   if (!videoToDelete) {
-    res.sendStatus(404);
+    res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
     return;
   }
 
-  db.videos = db.videos.filter((video) => {
+  localDb.videos = localDb.videos.filter((video) => {
     return video.id !== videoToDelete.id;
   });
 
-  res.sendStatus(204);
+  res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
 });
 videoRouter.put(
   '/:videoId',
@@ -77,12 +86,12 @@ videoRouter.put(
   (req: RequestWithParamsAndBody<{ videoId: string }, UpdateVideoModel>, res: Response) => {
     const videoId = req.params.videoId;
 
-    const videoToUpdate = db.videos.find((video) => {
+    const videoToUpdate = localDb.videos.find((video) => {
       return video.id === +videoId;
     });
 
     if (!videoToUpdate) {
-      res.sendStatus(404);
+      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
       return;
     }
 
@@ -97,13 +106,13 @@ videoRouter.put(
       availableResolutions: req.body.availableResolutions || [],
     };
 
-    db.videos = db.videos.map((video) => {
+    localDb.videos = localDb.videos.map((video) => {
       if (video.id === updatedVideo.id) {
         return updatedVideo;
       }
       return video;
     });
 
-    res.sendStatus(204);
+    res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
   }
 );

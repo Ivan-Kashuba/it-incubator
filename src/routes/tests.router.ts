@@ -1,10 +1,11 @@
 import express, { Request, Response } from 'express';
-import { db } from '../db/db';
+import { localDb } from '../db/local-db';
+import { STATUS_HTTP } from '../shared/types';
 
 export const testRouter = express.Router();
 
 testRouter.delete('/all-data', (req: Request, res: Response) => {
-  db.videos = [];
+  localDb.videos = [];
 
-  res.sendStatus(204);
+  res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
 });

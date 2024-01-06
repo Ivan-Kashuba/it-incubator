@@ -1,6 +1,7 @@
-import { STATUS_HTTP } from '../../src/types';
-import { getRequest } from '../../src/helpers/getRequest';
-import { CreateVideoModel } from '../../src/types/model/Video';
+import { STATUS_HTTP } from '../../src/shared/types';
+
+import { CreateVideoModel } from '../../src/features/videos/types/model/Video';
+import { getRequest } from './shared';
 
 export class VideoTestManagerClass {
   async createVideo(data: CreateVideoModel) {
@@ -10,13 +11,13 @@ export class VideoTestManagerClass {
 
     expect(createdVideo).toEqual({
       id: expect.any(Number),
-      title: 'title',
-      author: 'author',
+      title: data.title,
+      author: data.author,
       canBeDownloaded: false,
       minAgeRestriction: null,
       createdAt: expect.any(String),
       publicationDate: expect.any(String),
-      availableResolutions: [],
+      availableResolutions: data.availableResolutions || [],
     });
 
     return { createResponse, createdVideo };

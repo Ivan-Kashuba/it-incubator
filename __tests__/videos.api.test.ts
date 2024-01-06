@@ -1,16 +1,17 @@
 import { describe } from 'node:test';
-import { STATUS_HTTP } from '../src/types';
-import { getRequest } from '../src/helpers/getRequest';
+import { STATUS_HTTP } from '../src/shared/types';
+
 import { VideoTestManager } from './util/VideoTestManager';
+import { getRequest } from './util/shared';
 
 const validCreateVideoData = {
-  title: 'title',
-  author: 'author',
+  title: 'Title name',
+  author: 'Author',
 };
 
 const validUpdateVideoData = {
-  title: 'Typescript',
-  author: 'Ivan',
+  title: 'Typescript lang',
+  author: 'Ivan K',
 };
 
 describe('Videos', () => {

@@ -21,14 +21,14 @@ export interface Video {
 }
 
 export type CreateVideoModel = {
-  title?: string;
-  author?: string;
+  title: string;
+  author: string;
   availableResolutions?: VideoResolution[];
 };
 
 export type UpdateVideoModel = {
-  title?: string;
-  author?: string;
+  title: string;
+  author: string;
   availableResolutions?: VideoResolution[];
   canBeDownloaded?: boolean;
   minAgeRestriction?: number | null;

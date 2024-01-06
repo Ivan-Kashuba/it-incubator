@@ -1,15 +1,15 @@
 import { CreateVideoModel, UpdateVideoModel, VideoResolution } from '../types/model/Video';
-import { Error, ErrorResponse } from '../types/model/Error';
-import { NextFunction, Request, Response } from 'express';
-import { isIsoDate } from './isIsoString';
-import { RequestWithBody } from '../types';
+import { Error, ErrorResponse } from '../../../shared/types/Error';
+import { NextFunction, Response } from 'express';
+import { isIsoDate } from '../../../shared/helpers/isIsoString';
+import { RequestWithBody } from '../../../shared/types';
 
 export const createVideoModelValidation = (
-  req: RequestWithBody<CreateVideoModel>,
+  req: RequestWithBody<Partial<CreateVideoModel>>,
   res: Response,
   next: NextFunction
 ) => {
-  const productPayload: CreateVideoModel = req?.body;
+  const productPayload: Partial<CreateVideoModel> = req?.body;
   const errors: Error[] = [];
 
   const videoTitle = productPayload?.title?.trim() as string;
@@ -49,11 +49,11 @@ export const createVideoModelValidation = (
 };
 
 export const updateVideoModelValidation = (
-  req: RequestWithBody<UpdateVideoModel>,
+  req: RequestWithBody<Partial<UpdateVideoModel>>,
   res: Response,
   next: NextFunction
 ) => {
-  const productPayload: UpdateVideoModel = req?.body;
+  const productPayload: Partial<UpdateVideoModel> = req?.body;
   const errors: Error[] = [];
 
   const videoTitle = productPayload?.title?.trim() as string;

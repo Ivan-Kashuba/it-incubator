@@ -1,8 +1,8 @@
-import { DataBase } from '../types/model/db';
-import { addDaysToDate } from '../helpers/addDaysToDate';
-import { VideoResolution } from '../types/model/Video';
+import { addDaysToDate } from '../shared/helpers/addDaysToDate';
+import { VideoResolution } from '../features/videos/types/model/Video';
+import { DataBase } from './types/db';
 
-export const db: DataBase = {
+export const localDb: DataBase = {
   videos: [
     {
       id: 1,
