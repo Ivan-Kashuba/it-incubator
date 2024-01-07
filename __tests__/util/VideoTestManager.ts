@@ -1,11 +1,14 @@
 import { STATUS_HTTP } from '../../src/shared/types';
 
-import { CreateVideoModel } from '../../src/features/videos/types/model/Video';
-import { getRequest } from './shared';
+import { CreateVideoModel, Video } from '../../src/features/videos/types/model/Video';
+import { getRequest, SuperTestBodyResponse } from './shared';
 
 export class VideoTestManagerClass {
   async createVideo(data: CreateVideoModel) {
-    const createResponse = await getRequest().post('/videos').send(data).expect(STATUS_HTTP.CREATED_201);
+    const createResponse: SuperTestBodyResponse<Video> = await getRequest()
+      .post('/videos')
+      .send(data)
+      .expect(STATUS_HTTP.CREATED_201);
 
     const createdVideo = createResponse.body;
 
