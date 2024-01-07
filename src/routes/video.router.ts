@@ -2,7 +2,7 @@ import express, { Response } from 'express';
 import {
   createVideoModelValidation,
   updateVideoModelValidation,
-} from '../features/videos/helpers/videoModelsValidation';
+} from '../features/videos/validation/videoModelsValidation';
 import { CreateVideoModel, UpdateVideoModel, Video } from '../features/videos/types/model/Video';
 import {
   RequestWithBody,
@@ -13,6 +13,7 @@ import {
 } from '../shared/types';
 import { videosLocalRepository } from '../features/videos/repositories/videos-local-repository';
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
+import { authCheckMiddleware } from '../middlewares/authCheckMiddleware';
 
 export const videoRouter = express.Router();
 
@@ -25,6 +26,7 @@ videoRouter.get('/', async (req: RequestWithQuery<{ title?: string }>, res: Resp
 });
 videoRouter.post(
   '/',
+  authCheckMiddleware,
   createVideoModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithBody<CreateVideoModel>, res: Response<Video>) => {
@@ -45,20 +47,25 @@ videoRouter.get('/:videoId', async (req: RequestWithParams<{ videoId: string }>,
 
   res.status(STATUS_HTTP.OK_200).send(foundedVideo);
 });
-videoRouter.delete('/:videoId', async (req: RequestWithParams<{ videoId: string }>, res: Response<void>) => {
-  const videoId = +req.params.videoId;
+videoRouter.delete(
+  '/:videoId',
+  authCheckMiddleware,
+  async (req: RequestWithParams<{ videoId: string }>, res: Response<void>) => {
+    const videoId = +req.params.videoId;
 
-  const isVideoDeleted = await videosLocalRepository.deleteVideo(videoId);
+    const isVideoDeleted = await videosLocalRepository.deleteVideo(videoId);
 
-  if (!isVideoDeleted) {
-    res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
-    return;
-  } else {
-    res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
+    if (!isVideoDeleted) {
+      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
+      return;
+    } else {
+      res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
+    }
   }
-});
+);
 videoRouter.put(
   '/:videoId',
+  authCheckMiddleware,
   updateVideoModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithParamsAndBody<{ videoId: string }, UpdateVideoModel>, res: Response) => {
