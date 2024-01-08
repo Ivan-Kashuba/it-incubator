@@ -6,6 +6,7 @@ export const testRouter = express.Router();
 
 testRouter.delete('/all-data', (req: Request, res: Response) => {
   localDb.videos = [];
+  localDb.blogs = [];
 
   res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
 });

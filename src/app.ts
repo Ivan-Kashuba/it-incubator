@@ -3,6 +3,7 @@ import { videoRouter } from './routes/video.router';
 import { testRouter } from './routes/tests.router';
 import { authRouter } from './routes/auth.router';
 import { authCheckMiddleware } from './middlewares/authCheckMiddleware';
+import { blogRouter } from './routes/blog.router';
 
 export const app = express();
 const jsonBodyMiddleware = express.json();
@@ -12,5 +13,6 @@ app.get('/', (req, res) => {
   res.send('Hello Samurai!');
 });
 app.use('/videos', videoRouter);
+app.use('/blogs', blogRouter);
 app.use('/auth', authRouter);
 app.use('/testing', authCheckMiddleware, testRouter);

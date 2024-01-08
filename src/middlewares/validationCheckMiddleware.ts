@@ -7,7 +7,7 @@ export const validationCheckMiddleware = (req: Request, res: Response, next: Nex
   const errors = validationResult(req)
     .formatWith((error) => {
       if (error.type === 'field') {
-        return { message: error.msg, field: error.path };
+        return { field: error.path, message: error.msg };
       }
       return error;
     })
