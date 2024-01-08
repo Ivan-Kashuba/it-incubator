@@ -1,4 +1,6 @@
 import { checkSchema, Schema } from 'express-validator';
+import { getBlogForPost } from '../helpers/mapPostFromDbModelToView';
+import { blogsLocalRepository } from '../../blogs/repositories/blogs-local-repository';
 
 const postInputModelValidationSchema: Schema = {
   title: {
@@ -41,7 +43,22 @@ const postInputModelValidationSchema: Schema = {
     },
   },
   blogId: {
-    notEmpty: true,
+    notEmpty: {
+      errorMessage: 'Field is required',
+    },
+    custom: {
+      options: async (blogId: string) => {
+        try {
+          const blog = await blogsLocalRepository.findBlogById(blogId);
+          if (!blog) {
+            throw new Error('Blog with current Id does not exist');
+          }
+        } catch (err) {
+          throw new Error('Error checking blog existence');
+        }
+      },
+      errorMessage: 'Blog with current Id is not exists',
+    },
   },
 };
 export const postInputModelValidation = checkSchema(postInputModelValidationSchema);

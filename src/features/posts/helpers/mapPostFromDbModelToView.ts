@@ -8,7 +8,9 @@ export const getBlogForPost = (blogId?: string) => {
   });
 };
 
-export const mapPostFromDbModelToView = (dbPost: PostDbModel, blog: BlogViewModel): PostViewModel => {
+export const mapPostFromDbModelToView = (dbPost: PostDbModel, blogId: string): PostViewModel => {
+  const blog = getBlogForPost(blogId) as BlogViewModel;
+
   const postVieModel: PostViewModel = {
     id: dbPost.id,
     blogId: blog.id,

@@ -1,13 +1,12 @@
 import { localDb } from '../../../db/local-db';
 import { PostDbModel, PostInputModel, PostViewModel } from '../types/model/PostModels';
-import { getBlogForPost, mapPostFromDbModelToView } from '../helpers/mapPostFromDbModelToView';
-import { BlogViewModel } from '../../blogs/types/model/BlogModels';
+import { mapPostFromDbModelToView } from '../helpers/mapPostFromDbModelToView';
 
 export const postsLocalRepository = {
   async findPosts(title?: string) {
     if (!title) {
       return localDb.posts.map((post) => {
-        return mapPostFromDbModelToView(post, getBlogForPost(post.blogId) as BlogViewModel);
+        return mapPostFromDbModelToView(post, post.blogId);
       });
     }
 
@@ -16,7 +15,7 @@ export const postsLocalRepository = {
     });
 
     const viewModelPosts: PostViewModel[] = foundedPosts.map((matchedPost) => {
-      return mapPostFromDbModelToView(matchedPost, getBlogForPost(matchedPost.blogId) as BlogViewModel);
+      return mapPostFromDbModelToView(matchedPost, matchedPost.blogId);
     });
 
     return viewModelPosts;
@@ -27,13 +26,7 @@ export const postsLocalRepository = {
       return post.id === postId;
     });
 
-    const blog = getBlogForPost(foundedPost?.blogId);
-
-    if (!blog) {
-      return undefined;
-    }
-
-    return foundedPost ? mapPostFromDbModelToView(foundedPost, blog) : undefined;
+    return foundedPost ? mapPostFromDbModelToView(foundedPost, foundedPost.blogId) : undefined;
   },
 
   async createPost(postInfo: PostInputModel) {
@@ -49,16 +42,14 @@ export const postsLocalRepository = {
 
     localDb.posts.push(newPost);
 
-    return mapPostFromDbModelToView(newPost, getBlogForPost(blogId) as BlogViewModel);
+    return mapPostFromDbModelToView(newPost, blogId);
   },
 
   async updatePost(postId: string, postInfo: PostInputModel) {
     const { content, shortDescription, title, blogId } = postInfo;
     const postToUpdate = await this.findPostById(postId);
 
-    const blog = getBlogForPost(blogId);
-
-    if (!blog || !postToUpdate) {
+    if (!postToUpdate) {
       return undefined;
     }
 
@@ -77,7 +68,7 @@ export const postsLocalRepository = {
       return post;
     });
 
-    return mapPostFromDbModelToView(updatedPost, blog);
+    return mapPostFromDbModelToView(updatedPost, blogId);
   },
 
   async deletePost(postId: string) {
@@ -86,12 +77,6 @@ export const postsLocalRepository = {
     });
 
     if (!postToDelete) {
-      return false;
-    }
-
-    const blog = getBlogForPost(postToDelete?.blogId);
-
-    if (!blog) {
       return false;
     }
 
