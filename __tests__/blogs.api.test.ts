@@ -60,9 +60,7 @@ describe('Blogs', () => {
     expect(createResponse.body).toHaveProperty('errorsMessages');
     const errorsMessages = createResponse.body?.errorsMessages;
     expect(errorsMessages.length).toBe(2);
-
-    const errorResponse = createResponse.error as unknown as ExpressErrorType;
-    expect(JSON.parse(errorResponse.text)).toEqual(expectedError);
+    expect(createResponse.body).toEqual(expectedError);
 
     await getRequest().get('/blogs').expect(STATUS_HTTP.OK_200, [firstBlog]);
   });
