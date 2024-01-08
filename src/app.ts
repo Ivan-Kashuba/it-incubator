@@ -17,4 +17,4 @@ app.use('/videos', videoRouter);
 app.use('/blogs', blogRouter);
 app.use('/posts', postRouter);
 app.use('/auth', authRouter);
-app.use('/testing', authCheckMiddleware, testRouter);
+app.use('/testing', testRouter);
