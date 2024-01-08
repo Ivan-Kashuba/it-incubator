@@ -1,5 +1,5 @@
 import { localDb } from '../../../db/local-db';
-import { BlogInputModel, BlogViewModel } from '../types/model/BlogViewModel';
+import { BlogInputModel, BlogViewModel } from '../types/model/BlogModels';
 
 export const blogsLocalRepository = {
   async findBlogs(title?: string) {

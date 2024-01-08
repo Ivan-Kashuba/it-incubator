@@ -1,8 +1,6 @@
 import { STATUS_HTTP } from '../../src/shared/types';
 import { getRequest, SuperTestBodyResponse } from './shared';
-import { BlogInputModel, BlogViewModel } from '../../src/features/blogs/types/model/BlogViewModel';
-import { success } from 'concurrently/dist/src/defaults';
-import { ExpressErrorType } from '../types/shared';
+import { BlogInputModel, BlogViewModel } from '../../src/features/blogs/types/model/BlogModels';
 
 export class BlogTestManagerClass {
   async createBlog(data: BlogInputModel, expectedStatus = STATUS_HTTP.CREATED_201) {

@@ -1,7 +1,7 @@
 import { describe } from 'node:test';
 import { STATUS_HTTP } from '../src/shared/types';
 import { getRequest } from './util/shared';
-import { BlogInputModel, BlogViewModel } from '../src/features/blogs/types/model/BlogViewModel';
+import { BlogInputModel, BlogViewModel } from '../src/features/blogs/types/model/BlogModels';
 import { BlogTestManager } from './util/BlogTestManager';
 import { ErrorResponse } from '../src/shared/types/Error';
 import { ExpressErrorType } from './types/shared';

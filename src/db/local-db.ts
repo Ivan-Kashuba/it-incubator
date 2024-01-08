@@ -55,4 +55,9 @@ export const localDb: DataBase = {
       description: 'Samurai Swagger',
     },
   ],
+  posts: [
+    { id: '1', content: 'Content', title: 'Title', shortDescription: 'Description', blogId: '1' },
+    { id: '2', content: 'Content1', title: 'Title1', shortDescription: 'Description1', blogId: '2' },
+    { id: '3', content: 'Content2', title: 'Title2', shortDescription: 'Description2', blogId: '3' },
+  ],
 };

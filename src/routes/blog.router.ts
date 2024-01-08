@@ -9,7 +9,7 @@ import {
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
 import { authCheckMiddleware } from '../middlewares/authCheckMiddleware';
 import { blogsLocalRepository } from '../features/blogs/repositories/blogs-local-repository';
-import { BlogInputModel, BlogViewModel } from '../features/blogs/types/model/BlogViewModel';
+import { BlogInputModel, BlogViewModel } from '../features/blogs/types/model/BlogModels';
 import { blogInputModelValidation } from '../features/blogs/validation/blogInputModelValidation';
 
 export const blogRouter = express.Router();
