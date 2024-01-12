@@ -2,7 +2,6 @@ import express from 'express';
 import { videoRouter } from './routes/video.router';
 import { testRouter } from './routes/tests.router';
 import { authRouter } from './routes/auth.router';
-import { authCheckMiddleware } from './middlewares/authCheckMiddleware';
 
 export const app = express();
 const jsonBodyMiddleware = express.json();
@@ -13,4 +12,4 @@ app.get('/', (req, res) => {
 });
 app.use('/videos', videoRouter);
 app.use('/auth', authRouter);
-app.use('/testing', authCheckMiddleware, testRouter);
+app.use('/testing', testRouter);

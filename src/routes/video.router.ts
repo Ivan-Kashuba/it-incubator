@@ -11,7 +11,7 @@ import {
   RequestWithQuery,
   STATUS_HTTP,
 } from '../shared/types';
-import { videosLocalRepository } from '../features/videos/repositories/videos-local-repository';
+import { videosMongoDbRepository as videoRepository } from '../features/videos/repositories/videos-mongodb-repository';
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
 import { authCheckMiddleware } from '../middlewares/authCheckMiddleware';
 
@@ -20,7 +20,7 @@ export const videoRouter = express.Router();
 videoRouter.get('/', async (req: RequestWithQuery<{ title?: string }>, res: Response<Video[]>) => {
   const titleToFind = req?.query?.title;
 
-  const foundedVideos = await videosLocalRepository.findVideos(titleToFind);
+  const foundedVideos = await videoRepository.findVideos(titleToFind);
 
   res.status(STATUS_HTTP.OK_200).send(foundedVideos);
 });
@@ -30,7 +30,7 @@ videoRouter.post(
   createVideoModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithBody<CreateVideoModel>, res: Response<Video>) => {
-    const createdVideo = await videosLocalRepository.createVideo(req.body);
+    const createdVideo = await videoRepository.createVideo(req.body);
 
     res.status(STATUS_HTTP.CREATED_201).send(createdVideo);
   }
@@ -38,7 +38,7 @@ videoRouter.post(
 videoRouter.get('/:videoId', async (req: RequestWithParams<{ videoId: string }>, res: Response<Video>) => {
   const videoId = +req.params.videoId;
 
-  const foundedVideo = await videosLocalRepository.findVideoById(videoId);
+  const foundedVideo = await videoRepository.findVideoById(videoId);
 
   if (!foundedVideo) {
     res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
@@ -53,7 +53,7 @@ videoRouter.delete(
   async (req: RequestWithParams<{ videoId: string }>, res: Response<void>) => {
     const videoId = +req.params.videoId;
 
-    const isVideoDeleted = await videosLocalRepository.deleteVideo(videoId);
+    const isVideoDeleted = await videoRepository.deleteVideo(videoId);
 
     if (!isVideoDeleted) {
       res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
@@ -71,7 +71,7 @@ videoRouter.put(
   async (req: RequestWithParamsAndBody<{ videoId: string }, UpdateVideoModel>, res: Response) => {
     const videoId = +req.params.videoId;
 
-    const updatedVideo = await videosLocalRepository.updateVideo(videoId, req.body);
+    const updatedVideo = await videoRepository.updateVideo(videoId, req.body);
 
     if (!updatedVideo) {
       res.sendStatus(STATUS_HTTP.NOT_FOUND_404);

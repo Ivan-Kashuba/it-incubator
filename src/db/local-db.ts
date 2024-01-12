@@ -5,7 +5,7 @@ import { DataBase } from './types/db';
 export const localDb: DataBase = {
   videos: [
     {
-      id: 1,
+      id: +new Date(),
       title: 'Video 1',
       author: 'Ivan',
       canBeDownloaded: false,
@@ -15,7 +15,7 @@ export const localDb: DataBase = {
       availableResolutions: [VideoResolution.P240, VideoResolution.P360],
     },
     {
-      id: 2,
+      id: +new Date(),
       title: 'Video 2',
       author: 'Dima',
       canBeDownloaded: false,
@@ -25,7 +25,7 @@ export const localDb: DataBase = {
       availableResolutions: [VideoResolution.P240, VideoResolution.P360],
     },
     {
-      id: 3,
+      id: +new Date(),
       title: 'Video 3',
       author: 'Jenya',
       canBeDownloaded: true,

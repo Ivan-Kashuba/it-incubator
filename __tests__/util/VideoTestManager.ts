@@ -14,6 +14,7 @@ export class VideoTestManagerClass {
 
     expect(createdVideo).toEqual({
       id: expect.any(Number),
+      _id: expect.any(String),
       title: data.title,
       author: data.author,
       canBeDownloaded: false,
