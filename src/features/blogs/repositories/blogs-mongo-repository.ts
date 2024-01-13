@@ -31,6 +31,8 @@ export const blogsMongoRepository = {
 
     await blogsCollection.insertOne(newBlog);
 
+    // @ts-ignore
+    newBlog._id = undefined;
     return newBlog;
   },
 
