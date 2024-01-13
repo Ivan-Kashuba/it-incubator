@@ -14,7 +14,7 @@ export const blogsMongoRepository = {
   },
 
   async findBlogById(blogId: string) {
-    return blogsCollection.findOne({ id: blogId });
+    return blogsCollection.findOne({ id: blogId }, { projection: { _id: 0 } });
   },
 
   async createBlog(blog: BlogInputModel) {
