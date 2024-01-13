@@ -1,12 +1,6 @@
-export interface BlogDBModel {
-  _id: string;
-  id: string;
-  name: string;
-  description: string;
-  websiteUrl: string;
-  createdAt: string;
-  isMembership: boolean;
-}
+import { WithId } from 'mongodb';
+
+export type BlogDBModel = WithId<BlogViewModel>;
 
 export interface BlogViewModel {
   id: string;
