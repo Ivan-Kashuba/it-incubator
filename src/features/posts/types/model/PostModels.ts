@@ -4,6 +4,7 @@ export interface PostDbModel {
   shortDescription: string;
   content: string;
   blogId: string;
+  createdAt: string;
 }
 
 export interface PostViewModel {
@@ -13,6 +14,7 @@ export interface PostViewModel {
   content: string;
   blogId: string;
   blogName: string;
+  createdAt: string;
 }
 
 export type PostInputModel = {

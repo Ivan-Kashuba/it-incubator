@@ -60,6 +60,7 @@ describe('Posts', () => {
 
     if (createdBlog) {
       const postResponse = await getRequest().post('/posts').send(getPostCorrectInputData(createdBlog.id));
+      console.log('postResponse:', postResponse);
       post1 = postResponse.body;
     }
 

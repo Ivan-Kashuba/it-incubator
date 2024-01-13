@@ -1,6 +1,6 @@
 import { checkSchema, Schema } from 'express-validator';
-import { getBlogForPost } from '../helpers/mapPostFromDbModelToView';
 import { blogsLocalRepository } from '../../blogs/repositories/blogs-local-repository';
+import { blogsMongoRepository } from '../../blogs/repositories/blogs-mongo-repository';
 
 const postInputModelValidationSchema: Schema = {
   title: {
@@ -49,7 +49,7 @@ const postInputModelValidationSchema: Schema = {
     custom: {
       options: async (blogId: string) => {
         try {
-          const blog = await blogsLocalRepository.findBlogById(blogId);
+          const blog = await blogsMongoRepository.findBlogById(blogId);
           if (!blog) {
             throw new Error('Blog with current Id does not exist');
           }
