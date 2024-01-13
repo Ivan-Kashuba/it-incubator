@@ -1,7 +1,7 @@
-import { BlogViewModel } from '../../features/blogs/types/model/BlogModels';
+import { BlogDBModel } from '../../features/blogs/types/model/BlogModels';
 import { PostDbModel } from '../../features/posts/types/model/PostModels';
 
 export interface DataBase {
-  blogs: BlogViewModel[];
+  blogs: BlogDBModel[];
   posts: PostDbModel[];
 }

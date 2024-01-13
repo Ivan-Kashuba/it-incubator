@@ -14,10 +14,10 @@ import { blogInputModelValidation } from '../features/blogs/validation/blogInput
 
 export const blogRouter = express.Router();
 
-blogRouter.get('/', async (req: RequestWithQuery<{ title?: string }>, res: Response<BlogViewModel[]>) => {
-  const titleToFind = req?.query?.title;
+blogRouter.get('/', async (req: RequestWithQuery<{ name?: string }>, res: Response<BlogViewModel[]>) => {
+  const nameToFind = req?.query?.name;
 
-  const foundedBlogs = await blogsRepository.findBlogs(titleToFind);
+  const foundedBlogs = await blogsRepository.findBlogs(nameToFind);
 
   res.status(STATUS_HTTP.OK_200).send(foundedBlogs);
 });

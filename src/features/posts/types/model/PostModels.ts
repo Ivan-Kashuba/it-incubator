@@ -1,4 +1,5 @@
 export interface PostDbModel {
+  _id?: string;
   id: string;
   title: string;
   shortDescription: string;

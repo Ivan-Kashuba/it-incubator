@@ -14,6 +14,7 @@ export const postWithBlogNameAggregate = (match?: Record<string, any>) => {
     },
     {
       $project: {
+        _id: 0,
         id: 1,
         content: 1,
         title: 1,

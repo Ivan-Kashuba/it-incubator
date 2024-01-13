@@ -10,7 +10,7 @@ export const blogsMongoRepository = {
       filters = { name: getInsensitiveCaseSearchRegexString(blogName) };
     }
 
-    return blogsCollection.find(filters).toArray();
+    return blogsCollection.find(filters, { projection: { _id: 0 } }).toArray();
   },
 
   async findBlogById(blogId: string) {

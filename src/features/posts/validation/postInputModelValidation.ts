@@ -1,5 +1,4 @@
 import { checkSchema, Schema } from 'express-validator';
-import { blogsLocalRepository } from '../../blogs/repositories/blogs-local-repository';
 import { blogsMongoRepository } from '../../blogs/repositories/blogs-mongo-repository';
 
 const postInputModelValidationSchema: Schema = {
