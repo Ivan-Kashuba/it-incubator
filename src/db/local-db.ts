@@ -8,7 +8,7 @@ export const localDb: DataBase = {
       name: 'Regex',
       description: 'About regex',
       createdAt: '2024-01-13T16:20:58.068Z',
-      isMembership: true,
+      isMembership: false,
     },
     {
       id: '2',
@@ -16,7 +16,7 @@ export const localDb: DataBase = {
       name: 'Github',
       description: 'Github regex',
       createdAt: '2024-01-13T16:20:58.068Z',
-      isMembership: true,
+      isMembership: false,
     },
     {
       id: '3',
@@ -24,7 +24,7 @@ export const localDb: DataBase = {
       name: 'Samurai',
       description: 'Samurai Swagger',
       createdAt: '2024-01-13T16:20:58.068Z',
-      isMembership: true,
+      isMembership: false,
     },
   ],
   posts: [

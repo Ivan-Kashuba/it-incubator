@@ -27,7 +27,7 @@ export const blogsLocalRepository = {
       websiteUrl,
       description,
       createdAt: new Date().toISOString(),
-      isMembership: true,
+      isMembership: false,
     };
 
     localDb.blogs.push(newBlog);
@@ -46,7 +46,7 @@ export const blogsLocalRepository = {
         name,
         websiteUrl,
         createdAt: new Date().toISOString(),
-        isMembership: true,
+        isMembership: false,
       };
 
       localDb.blogs = localDb.blogs.map((blog) => {

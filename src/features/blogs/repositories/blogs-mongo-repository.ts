@@ -26,7 +26,7 @@ export const blogsMongoRepository = {
       websiteUrl,
       description,
       createdAt: new Date().toISOString(),
-      isMembership: true,
+      isMembership: false,
     };
 
     await blogsCollection.insertOne(newBlog);

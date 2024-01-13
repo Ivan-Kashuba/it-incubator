@@ -18,7 +18,7 @@ export class BlogTestManagerClass {
         description: createdBlog.description,
         websiteUrl: createdBlog.websiteUrl,
         createdAt: expect.stringMatching(ISO_STRING),
-        isMembership: true,
+        isMembership: false,
       });
 
       return { createResponse: successfulCreateResponse, createdBlog };
