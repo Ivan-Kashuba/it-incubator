@@ -11,16 +11,16 @@ import {
   RequestWithQuery,
   STATUS_HTTP,
 } from '../shared/types';
-import { videosMongoDbRepository as videoRepository } from '../features/videos/repositories/videos-mongodb-repository';
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
 import { authCheckMiddleware } from '../middlewares/authCheckMiddleware';
+import { videosService } from '../features/videos/domain/videos-service';
 
 export const videoRouter = express.Router();
 
 videoRouter.get('/', async (req: RequestWithQuery<{ title?: string }>, res: Response<Video[]>) => {
   const titleToFind = req?.query?.title;
 
-  const foundedVideos = await videoRepository.findVideos(titleToFind);
+  const foundedVideos = await videosService.findVideos(titleToFind);
 
   res.status(STATUS_HTTP.OK_200).send(foundedVideos);
 });
@@ -30,7 +30,7 @@ videoRouter.post(
   createVideoModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithBody<CreateVideoModel>, res: Response<Video>) => {
-    const createdVideo = await videoRepository.createVideo(req.body);
+    const createdVideo = await videosService.createVideo(req.body);
 
     res.status(STATUS_HTTP.CREATED_201).send(createdVideo);
   }
@@ -38,7 +38,7 @@ videoRouter.post(
 videoRouter.get('/:videoId', async (req: RequestWithParams<{ videoId: string }>, res: Response<Video>) => {
   const videoId = +req.params.videoId;
 
-  const foundedVideo = await videoRepository.findVideoById(videoId);
+  const foundedVideo = await videosService.findVideoById(videoId);
 
   if (!foundedVideo) {
     res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
@@ -53,7 +53,7 @@ videoRouter.delete(
   async (req: RequestWithParams<{ videoId: string }>, res: Response<void>) => {
     const videoId = +req.params.videoId;
 
-    const isVideoDeleted = await videoRepository.deleteVideo(videoId);
+    const isVideoDeleted = await videosService.deleteVideo(videoId);
 
     if (!isVideoDeleted) {
       res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
@@ -71,7 +71,7 @@ videoRouter.put(
   async (req: RequestWithParamsAndBody<{ videoId: string }, UpdateVideoModel>, res: Response) => {
     const videoId = +req.params.videoId;
 
-    const updatedVideo = await videoRepository.updateVideo(videoId, req.body);
+    const updatedVideo = await videosService.updateVideo(videoId, req.body);
 
     if (!updatedVideo) {
       res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
