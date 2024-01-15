@@ -1,10 +1,11 @@
 import { CreateVideoModel, UpdateVideoModel, Video } from '../types/model/Video';
 import { addDaysToDate } from '../../../shared/helpers/addDaysToDate';
 import { videosMongoDbRepository as videosRepository } from '../repositories/videos-mongodb-repository';
+import { TSortDirection } from '../../../shared/types/Pagination';
 
 export const videosService = {
-  async findVideos(title?: string) {
-    return videosRepository.findVideos(title);
+  async findVideos(pageNumber: number, limit: number, sortBy: string, sortDirection: TSortDirection, title?: string) {
+    return videosRepository.findVideos(pageNumber, limit, sortBy, sortDirection, title);
   },
 
   async findVideoById(videoId: number) {

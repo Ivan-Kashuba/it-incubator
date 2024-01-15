@@ -1,17 +1,35 @@
-import { CreateVideoModel, UpdateVideoModel, Video } from '../types/model/Video';
-import { addDaysToDate } from '../../../shared/helpers/addDaysToDate';
+import { Video } from '../types/model/Video';
 import { videosCollection } from '../../../db/mongoDb';
 import { getInsensitiveCaseSearchRegexString } from '../../../shared/helpers/getInsensitiveCaseSearchRegexString';
+import { TSortDirection, WithPagination } from '../../../shared/types/Pagination';
+import { sortDirectionToMongodb } from '../../../shared/helpers/sortDirectionToMongodb';
 
 export const videosMongoDbRepository = {
-  async findVideos(title?: string) {
+  async findVideos(
+    pageNumber: number,
+    limit: number,
+    sortBy: string,
+    sortDirection: TSortDirection,
+    title?: string
+  ): Promise<WithPagination<Video>> {
     let filter: any = {};
+
+    const skip = (pageNumber - 1) * limit;
 
     if (title) {
       filter = { title: getInsensitiveCaseSearchRegexString(title) };
     }
 
-    return videosCollection.find(filter).toArray();
+    const videos = await videosCollection
+      .find(filter)
+      .sort({ [sortBy]: sortDirectionToMongodb(sortDirection) })
+      .limit(limit)
+      .skip(skip)
+      .toArray();
+
+    const totalCount = await videosCollection.countDocuments(filter);
+    const pagesCount = Math.ceil(totalCount / limit);
+    return { totalCount, items: videos, page: pageNumber, pagesCount, pageSize: limit };
   },
 
   async findVideoById(videoId: number) {

@@ -14,16 +14,27 @@ import {
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
 import { authCheckMiddleware } from '../middlewares/authCheckMiddleware';
 import { videosService } from '../features/videos/domain/videos-service';
+import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
 
 export const videoRouter = express.Router();
 
-videoRouter.get('/', async (req: RequestWithQuery<{ title?: string }>, res: Response<Video[]>) => {
-  const titleToFind = req?.query?.title;
+videoRouter.get(
+  '/',
+  async (
+    req: RequestWithQuery<{ title?: string } & PaginationPayload<keyof Video>>,
+    res: Response<WithPagination<Video>>
+  ) => {
+    const titleToFind = req?.query?.title;
+    const pageNumber = req?.query?.pageNumber || 1;
+    const limit = req?.query?.limit || 10;
+    const sortBy = req?.query?.sortBy || 'title';
+    const sortDirection = req?.query?.sortDirection || 'asc';
 
-  const foundedVideos = await videosService.findVideos(titleToFind);
+    const foundedVideos = await videosService.findVideos(+pageNumber, +limit, sortBy, sortDirection, titleToFind);
 
-  res.status(STATUS_HTTP.OK_200).send(foundedVideos);
-});
+    res.status(STATUS_HTTP.OK_200).send(foundedVideos);
+  }
+);
 videoRouter.post(
   '/',
   authCheckMiddleware,
