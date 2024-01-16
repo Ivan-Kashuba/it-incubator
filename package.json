@@ -7,7 +7,7 @@
     "start": "concurrently \"npm run watch\" \"npm run dev\"",
     "dev": "yarn nodemon --inspect dist/index.js",
     "watch": "tsc -w",
-    "test": "jest \"__tests__/.*\\.test\\.ts\""
+    "test": "jest --runInBand --forceExit \"__tests__/.*\\.test\\.ts\""
   },
   "dependencies": {
     "express": "^4.18.2",

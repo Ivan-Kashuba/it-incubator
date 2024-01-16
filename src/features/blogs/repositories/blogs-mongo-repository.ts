@@ -1,6 +1,7 @@
-import { BlogInputModel, BlogViewModel } from '../types/model/BlogModels';
-import { blogsCollection } from '../../../db/mongoDb';
+import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../types/model/BlogModels';
+import { blogsCollection, postsCollection } from '../../../db/mongoDb';
 import { getInsensitiveCaseSearchRegexString } from '../../../shared/helpers/getInsensitiveCaseSearchRegexString';
+import { PostDbModel, PostViewModel } from '../../posts/types/model/PostModels';
 
 export const blogsMongoRepository = {
   async findBlogs(blogName?: string) {
@@ -58,5 +59,60 @@ export const blogsMongoRepository = {
   async deleteBlog(blogId: string) {
     const deleteResult = await blogsCollection.deleteMany({ id: blogId });
     return deleteResult.deletedCount === 1;
+  },
+
+  async createPostForBlog(blogId: string, postContent: BlogPostInputModel) {
+    const { title, shortDescription, content } = postContent;
+
+    const generatedId = Math.floor(Math.random() * 10000000).toString();
+
+    const createdPostInDb: PostDbModel = {
+      id: generatedId,
+      blogId,
+      title,
+      createdAt: new Date().toISOString(),
+      content,
+      shortDescription,
+    };
+
+    const postBlog = await this.findBlogById(blogId);
+
+    const viewPost: PostViewModel = {
+      blogId: createdPostInDb.blogId,
+      createdAt: createdPostInDb.createdAt,
+      title: createdPostInDb.title,
+      shortDescription: createdPostInDb.shortDescription,
+      id: createdPostInDb.id,
+      blogName: postBlog!.name,
+      content: createdPostInDb.content,
+    };
+
+    await postsCollection.insertOne(createdPostInDb);
+
+    return viewPost;
+  },
+
+  async getPostsByBlogId(blogId: string) {
+    const blog = await this.findBlogById(blogId);
+
+    if (!blog) {
+      return null;
+    }
+
+    const postsFromBd = await postsCollection.find({ blogId: blog?.id }).toArray();
+
+    const viewPosts: PostViewModel[] = postsFromBd.map((post) => {
+      return {
+        blogId: blog.id,
+        blogName: blog.name,
+        content: post.content,
+        shortDescription: post.shortDescription,
+        title: post.title,
+        createdAt: post.createdAt,
+        id: post.id,
+      };
+    });
+
+    return viewPosts;
   },
 };

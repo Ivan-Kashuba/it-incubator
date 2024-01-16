@@ -17,6 +17,7 @@ const blogIncorrectInputData: BlogInputModel = {
   websiteUrl: 'google.com',
 };
 
+let firstBlog: BlogViewModel = {} as BlogViewModel;
 describe('Blogs', () => {
   beforeAll(async () => {
     await getRequest().delete('/testing/all-data');
@@ -35,7 +36,6 @@ describe('Blogs', () => {
     await getRequest().post('/blogs').send({}).expect(STATUS_HTTP.BAD_REQUEST_400);
     await getRequest().get('/blogs').expect(STATUS_HTTP.OK_200, []);
   });
-  let firstBlog: BlogViewModel = {} as BlogViewModel;
   it('Should create blog with correct input data', async () => {
     const { createdBlog } = await BlogTestManager.createBlog(blogInputCorrectData);
 
@@ -70,16 +70,13 @@ describe('Blogs', () => {
 
   it('Should update with correct input data', async () => {
     await getRequest().put(`/blogs/${firstBlog.id}`).send(blogInputCorrectData).expect(STATUS_HTTP.NO_CONTENT_204);
-    await getRequest()
-      .get('/blogs')
-      .expect(STATUS_HTTP.OK_200, [{ ...firstBlog, ...blogInputCorrectData }]);
+    firstBlog = { ...firstBlog, ...blogInputCorrectData };
+    await getRequest().get('/blogs').expect(STATUS_HTTP.OK_200, [firstBlog]);
   });
 
   it('Delete blog with unexisted id', async () => {
     await getRequest().delete(`/blogs/-99999999999999`).expect(STATUS_HTTP.NOT_FOUND_404);
-    await getRequest()
-      .get('/blogs')
-      .expect(STATUS_HTTP.OK_200, [{ ...firstBlog, ...blogInputCorrectData }]);
+    await getRequest().get('/blogs').expect(STATUS_HTTP.OK_200, [firstBlog]);
   });
 
   it('Delete blog with correct id', async () => {

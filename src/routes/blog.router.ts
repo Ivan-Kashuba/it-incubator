@@ -9,8 +9,10 @@ import {
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
 import { authCheckMiddleware } from '../middlewares/authCheckMiddleware';
 import { blogsMongoRepository as blogsRepository } from '../features/blogs/repositories/blogs-mongo-repository';
-import { BlogInputModel, BlogViewModel } from '../features/blogs/types/model/BlogModels';
+import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../features/blogs/types/model/BlogModels';
 import { blogInputModelValidation } from '../features/blogs/validation/blogInputModelValidation';
+import { PostViewModel } from '../features/posts/types/model/PostModels';
+import { blogPostInputModelValidation } from '../features/blogs/validation/blogPostInputModelValidation';
 
 export const blogRouter = express.Router();
 
@@ -76,5 +78,39 @@ blogRouter.put(
     }
 
     res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
+  }
+);
+
+blogRouter.post(
+  '/:blogId/posts',
+  authCheckMiddleware,
+  blogPostInputModelValidation,
+  validationCheckMiddleware,
+  async (req: RequestWithParamsAndBody<{ blogId: string }, BlogPostInputModel>, res: Response<PostViewModel>) => {
+    const blogId = req.params.blogId;
+
+    const createdPost = await blogsRepository.createPostForBlog(blogId, req.body);
+
+    if (createdPost) {
+      res.status(201).send(createdPost);
+    } else {
+      res.sendStatus(404);
+    }
+  }
+);
+
+blogRouter.get(
+  '/:blogId/posts',
+  authCheckMiddleware,
+  async (req: RequestWithParams<{ blogId: string }>, res: Response<PostViewModel[]>) => {
+    const blogId = req.params.blogId;
+
+    const posts = await blogsRepository.getPostsByBlogId(blogId);
+
+    if (posts) {
+      res.status(200).send(posts);
+    } else {
+      res.sendStatus(404);
+    }
   }
 );
