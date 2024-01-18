@@ -9,7 +9,10 @@ import {
 } from '../shared/types';
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
 import { authCheckMiddleware } from '../middlewares/authCheckMiddleware';
-import { blogsMongoRepository as blogsRepository } from '../features/blogs/repositories/blogs-mongo-repository';
+import {
+  blogsMongoRepository,
+  blogsMongoRepository as blogsRepository,
+} from '../features/blogs/repositories/blogs-mongo-repository';
 import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../features/blogs/types/model/BlogModels';
 import { blogInputModelValidation } from '../features/blogs/validation/blogInputModelValidation';
 import { PostViewModel } from '../features/posts/types/model/PostModels';
@@ -100,6 +103,15 @@ blogRouter.post(
   validationCheckMiddleware,
   async (req: RequestWithParamsAndBody<{ blogId: string }, BlogPostInputModel>, res: Response<PostViewModel>) => {
     const blogId = req.params.blogId;
+
+    if (!blogId) {
+      res.sendStatus(404);
+    }
+
+    const blog = await blogsMongoRepository.findBlogById(blogId);
+    if (!blog) {
+      res.sendStatus(404);
+    }
 
     const createdPost = await blogsRepository.createPostForBlog(blogId, req.body);
 
