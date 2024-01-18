@@ -11,16 +11,27 @@ import { authCheckMiddleware } from '../middlewares/authCheckMiddleware';
 import { postInputModelValidation } from '../features/posts/validation/postInputModelValidation';
 import { postsMongoRepository as postsRepository } from '../features/posts/repositories/posts-mongo-repository';
 import { PostInputModel, PostViewModel } from '../features/posts/types/model/PostModels';
+import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
+import { DEFAULT_PAGINATION_PAYLOAD } from '../shared/constants/pagination';
+import { validatePayloadPagination } from '../shared/helpers/pagination';
 
 export const postRouter = express.Router();
 
-postRouter.get('/', async (req: RequestWithQuery<{ title?: string }>, res: Response<PostViewModel[]>) => {
-  const titleToFind = req?.query?.title;
+postRouter.get(
+  '/',
+  async (
+    req: RequestWithQuery<{ title?: string } & Partial<PaginationPayload<PostViewModel>>>,
+    res: Response<WithPagination<PostViewModel>>
+  ) => {
+    const pagination: PaginationPayload<PostViewModel> = validatePayloadPagination(req.query, 'createdAt');
 
-  const foundedPost = await postsRepository.findPosts(titleToFind);
+    const titleToFind = req?.query?.title || null;
 
-  res.status(STATUS_HTTP.OK_200).send(foundedPost);
-});
+    const foundedPost = await postsRepository.findPosts(titleToFind, pagination);
+
+    res.status(STATUS_HTTP.OK_200).send(foundedPost);
+  }
+);
 
 postRouter.post(
   '/',

@@ -3,6 +3,7 @@ import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
+  RequestWithParamsAndQuery,
   RequestWithQuery,
   STATUS_HTTP,
 } from '../shared/types';
@@ -13,16 +14,27 @@ import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../features/b
 import { blogInputModelValidation } from '../features/blogs/validation/blogInputModelValidation';
 import { PostViewModel } from '../features/posts/types/model/PostModels';
 import { blogPostInputModelValidation } from '../features/blogs/validation/blogPostInputModelValidation';
+import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
+import { DEFAULT_PAGINATION_PAYLOAD } from '../shared/constants/pagination';
+import { validatePayloadPagination } from '../shared/helpers/pagination';
 
 export const blogRouter = express.Router();
 
-blogRouter.get('/', async (req: RequestWithQuery<{ name?: string }>, res: Response<BlogViewModel[]>) => {
-  const nameToFind = req?.query?.name;
+blogRouter.get(
+  '/',
+  async (
+    req: RequestWithQuery<{ searchNameTerm?: string | null } & Partial<PaginationPayload<BlogViewModel>>>,
+    res: Response<WithPagination<BlogViewModel>>
+  ) => {
+    const nameToFind = req?.query?.searchNameTerm || null;
 
-  const foundedBlogs = await blogsRepository.findBlogs(nameToFind);
+    const pagination: PaginationPayload<BlogViewModel> = validatePayloadPagination(req.query, 'createdAt');
 
-  res.status(STATUS_HTTP.OK_200).send(foundedBlogs);
-});
+    const foundedBlogs = await blogsRepository.findBlogs(nameToFind, pagination);
+
+    res.status(STATUS_HTTP.OK_200).send(foundedBlogs);
+  }
+);
 blogRouter.post(
   '/',
   authCheckMiddleware,
@@ -101,11 +113,15 @@ blogRouter.post(
 
 blogRouter.get(
   '/:blogId/posts',
-  authCheckMiddleware,
-  async (req: RequestWithParams<{ blogId: string }>, res: Response<PostViewModel[]>) => {
+  async (
+    req: RequestWithParamsAndQuery<{ blogId: string }, Partial<PaginationPayload<PostViewModel>>>,
+    res: Response<WithPagination<PostViewModel>>
+  ) => {
     const blogId = req.params.blogId;
 
-    const posts = await blogsRepository.getPostsByBlogId(blogId);
+    const pagination: PaginationPayload<PostViewModel> = validatePayloadPagination(req.query, 'createdAt');
+
+    const posts = await blogsRepository.getPostsByBlogId(blogId, pagination);
 
     if (posts) {
       res.status(200).send(posts);

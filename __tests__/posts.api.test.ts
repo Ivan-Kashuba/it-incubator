@@ -1,4 +1,3 @@
-import { describe } from 'node:test';
 import { STATUS_HTTP } from '../src/shared/types';
 import { getRequest } from './util/shared';
 import { BlogInputModel, BlogViewModel } from '../src/features/blogs/types/model/BlogModels';
@@ -44,18 +43,30 @@ describe('Posts', () => {
     await getRequest().delete('/testing/all-data');
   });
 
-  it('Should return 200 and empty blogs list', async () => {
-    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, []);
+  it('Should return 200 and empty posts list with default pagination', async () => {
+    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, {
+      pageSize: 10,
+      page: 1,
+      pagesCount: 0,
+      totalCount: 0,
+      items: [],
+    });
   });
 
-  it('Should return 404 for not existing blog', async () => {
+  it('Should return 404 for not existing post', async () => {
     await getRequest().get('/posts/-99999999999999').expect(STATUS_HTTP.NOT_FOUND_404);
   });
 
   it('Should not be created with incorrect input data', async () => {
     await getRequest().post('/posts').send(postIncorrectInputData).expect(STATUS_HTTP.BAD_REQUEST_400);
     await getRequest().post('/posts').send({}).expect(STATUS_HTTP.BAD_REQUEST_400);
-    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, []);
+    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, {
+      pageSize: 10,
+      page: 1,
+      pagesCount: 0,
+      totalCount: 0,
+      items: [],
+    });
   });
   it('Should create post with correct input data', async () => {
     const { createdBlog } = await BlogTestManager.createBlog(blogInputCorrectData);
@@ -65,7 +76,15 @@ describe('Posts', () => {
       post1 = postResponse.body;
     }
 
-    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, [post1]);
+    await getRequest()
+      .get('/posts')
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 10,
+        page: 1,
+        pagesCount: 1,
+        totalCount: 1,
+        items: [post1],
+      });
   });
   it('Should create post for blog by endpoint /blogs/{blogId}/posts', async () => {
     const { createdBlog } = await BlogTestManager.createBlog(blogInputCorrectData);
@@ -80,7 +99,25 @@ describe('Posts', () => {
       post2 = createdPost;
     }
 
-    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, [post1, post2]);
+    await getRequest()
+      .get('/posts')
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 10,
+        page: 1,
+        pagesCount: 1,
+        totalCount: 2,
+        items: [post2, post1],
+      });
+
+    await getRequest()
+      .get(`/blogs/${createdBlog!.id}/posts`)
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 10,
+        page: 1,
+        pagesCount: 1,
+        totalCount: 1,
+        items: [post2],
+      });
   });
   it('Creating post for blog by endpoint /blogs/{blogId}/posts should return error body validations', async () => {
     const { createdBlog } = await BlogTestManager.createBlog(blogInputCorrectData);
@@ -104,7 +141,15 @@ describe('Posts', () => {
 
     expect(createResponse.body).toEqual(expectedError);
 
-    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, [post1, post2]);
+    await getRequest()
+      .get('/posts')
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 10,
+        page: 1,
+        pagesCount: 1,
+        totalCount: 2,
+        items: [post2, post1],
+      });
   });
 
   it('Should not create post for blog by endpoint /blogs/{blogId}/posts with not existed blogId', async () => {
@@ -131,7 +176,15 @@ describe('Posts', () => {
       post2 = createdPost;
     }
 
-    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, [post1, post2]);
+    await getRequest()
+      .get('/posts')
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 10,
+        page: 1,
+        pagesCount: 1,
+        totalCount: 2,
+        items: [post2, post1],
+      });
   });
 
   it('Should not update with incorrect input data', async () => {
@@ -146,17 +199,83 @@ describe('Posts', () => {
 
     post1 = { ...post1, ...getUpdateCorrectPostData(post1.blogId) };
 
-    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, [post1, post2]);
+    await getRequest()
+      .get('/posts')
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 10,
+        page: 1,
+        pagesCount: 1,
+        totalCount: 2,
+        items: [post2, post1],
+      });
+  });
+
+  it('GET Sorting and filtering works correct', async () => {
+    await getRequest()
+      .get('/posts?sortDirection=asc')
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 10,
+        page: 1,
+        pagesCount: 1,
+        totalCount: 2,
+        items: [post1, post2],
+      });
+
+    await getRequest()
+      .get('/posts?pageSize=1&pageNumber=2')
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 1,
+        page: 2,
+        pagesCount: 2,
+        totalCount: 2,
+        items: [post1],
+      });
+
+    await getRequest()
+      .get('/posts?pageSize=1&pageNumber=2&sortDirection=asc')
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 1,
+        page: 2,
+        pagesCount: 2,
+        totalCount: 2,
+        items: [post2],
+      });
+
+    await getRequest()
+      .get('/posts?pageSize=blabla&pageNumber=blabla&sortDirection=blabla&sortBy=unexistedName')
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 10,
+        page: 1,
+        pagesCount: 1,
+        totalCount: 2,
+        items: [post1, post2],
+      });
   });
 
   it('Delete blog with unexisted id', async () => {
     await getRequest().delete(`/posts/-99999999999999`).expect(STATUS_HTTP.NOT_FOUND_404);
-    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, [post1, post2]);
+    await getRequest()
+      .get('/posts')
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 10,
+        page: 1,
+        pagesCount: 1,
+        totalCount: 2,
+        items: [post2, post1],
+      });
   });
 
   it('Delete blog with correct id', async () => {
     await getRequest().delete(`/posts/${post1.id}`).expect(STATUS_HTTP.NO_CONTENT_204);
-    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, [post2]);
+    await getRequest()
+      .get('/posts')
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 10,
+        page: 1,
+        pagesCount: 1,
+        totalCount: 1,
+        items: [post2],
+      });
   });
 
   it('post and get for posts by blogId /blogs/{blogId}/posts', async () => {
@@ -177,9 +296,10 @@ describe('Posts', () => {
       .get(`/blogs/${createdBlog!.id}/posts`)
       .expect(STATUS_HTTP.OK_200)
       .expect((res) => {
-        expect(Array.isArray(res.body)).toBe(true);
-        expect(res.body.length).toBe(4);
-        expect(res.body).toEqual(expect.arrayContaining(createdPosts));
+        expect(Array.isArray(res.body.items)).toBe(true);
+        expect(res.body.items.length).toBe(4);
+        expect(res.body.totalCount).toBe(4);
+        expect(res.body.items).toEqual(expect.arrayContaining(createdPosts));
       });
   });
 });

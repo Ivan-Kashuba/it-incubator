@@ -2,16 +2,31 @@ import { PostDbModel, PostInputModel, PostViewModel } from '../types/model/PostM
 import { getInsensitiveCaseSearchRegexString } from '../../../shared/helpers/getInsensitiveCaseSearchRegexString';
 import { postsCollection } from '../../../db/mongoDb';
 import { postWithBlogNameAggregate } from '../aggregations/postWithBlogNameAggregate';
+import { PaginationPayload, WithPagination } from '../../../shared/types/Pagination';
+import { createPaginationResponse, getSkip, getSortValue } from '../../../shared/helpers/pagination';
 
 export const postsMongoRepository = {
-  async findPosts(title?: string) {
+  async findPosts(
+    title: string | null,
+    pagination: PaginationPayload<PostViewModel>
+  ): Promise<WithPagination<PostViewModel>> {
+    const { sortDirection, sortBy, pageNumber, pageSize } = pagination;
+
     let filters = {};
 
     if (title) {
       filters = { title: getInsensitiveCaseSearchRegexString(title) };
     }
+    const totalCount = await postsCollection.countDocuments(filters);
+    const foundedPosts = (await postsCollection
 
-    return (await postsCollection.aggregate(postWithBlogNameAggregate(filters)).toArray()) as PostViewModel[];
+      .aggregate(postWithBlogNameAggregate(filters))
+      .sort({ [sortBy]: getSortValue(sortDirection) })
+      .skip(getSkip(pageNumber, pageSize))
+      .limit(pageSize)
+      .toArray()) as PostViewModel[];
+
+    return createPaginationResponse<PostViewModel>(pagination, foundedPosts, totalCount);
   },
 
   async findPostById(postId: string) {

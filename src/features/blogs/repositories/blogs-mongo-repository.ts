@@ -2,16 +2,32 @@ import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../types/mode
 import { blogsCollection, postsCollection } from '../../../db/mongoDb';
 import { getInsensitiveCaseSearchRegexString } from '../../../shared/helpers/getInsensitiveCaseSearchRegexString';
 import { PostDbModel, PostViewModel } from '../../posts/types/model/PostModels';
+import { PaginationPayload, WithPagination } from '../../../shared/types/Pagination';
+import { DEFAULT_PAGINATION_PAYLOAD } from '../../../shared/constants/pagination';
+import { createPaginationResponse, getSkip, getSortValue } from '../../../shared/helpers/pagination';
 
 export const blogsMongoRepository = {
-  async findBlogs(blogName?: string) {
+  async findBlogs(
+    blogName: string | null,
+    pagination: PaginationPayload<BlogViewModel>
+  ): Promise<WithPagination<BlogViewModel>> {
+    const { pageNumber, pageSize, sortBy, sortDirection } = pagination;
     let filters = {};
 
     if (blogName) {
       filters = { name: getInsensitiveCaseSearchRegexString(blogName) };
     }
 
-    return blogsCollection.find(filters, { projection: { _id: 0 } }).toArray();
+    const totalCount = await blogsCollection.countDocuments(filters);
+
+    const foundedBlogs = await blogsCollection
+      .find(filters, { projection: { _id: 0 } })
+      .sort({ [sortBy]: getSortValue(sortDirection) })
+      .skip(getSkip(pageNumber, pageSize))
+      .limit(pagination.pageSize)
+      .toArray();
+
+    return createPaginationResponse<BlogViewModel>(pagination, foundedBlogs, totalCount);
   },
 
   async findBlogById(blogId: string) {
@@ -92,14 +108,23 @@ export const blogsMongoRepository = {
     return viewPost;
   },
 
-  async getPostsByBlogId(blogId: string) {
+  async getPostsByBlogId(blogId: string, pagination: PaginationPayload<PostViewModel>) {
+    const { pageNumber, pageSize, sortBy, sortDirection } = pagination;
     const blog = await this.findBlogById(blogId);
 
     if (!blog) {
       return null;
     }
 
-    const postsFromBd = await postsCollection.find({ blogId: blog?.id }).toArray();
+    const filter = { blogId: blog?.id };
+
+    const totalCount = await postsCollection.countDocuments(filter);
+    const postsFromBd = await postsCollection
+      .find(filter)
+      .sort({ [sortBy]: getSortValue(sortDirection) })
+      .skip(getSkip(pageNumber, pageSize))
+      .limit(pageSize)
+      .toArray();
 
     const viewPosts: PostViewModel[] = postsFromBd.map((post) => {
       return {
@@ -113,6 +138,6 @@ export const blogsMongoRepository = {
       };
     });
 
-    return viewPosts;
+    return createPaginationResponse<PostViewModel>(pagination, viewPosts, totalCount);
   },
 };
