@@ -105,12 +105,13 @@ blogRouter.post(
     const blogId = req.params.blogId;
 
     if (!blogId) {
-      res.sendStatus(404);
+      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
     }
 
     const blog = await blogsMongoRepository.findBlogById(blogId);
+
     if (!blog) {
-      res.sendStatus(404);
+      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
     }
 
     const createdPost = await blogsRepository.createPostForBlog(blogId, req.body);
