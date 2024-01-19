@@ -169,7 +169,7 @@ describe('Posts', () => {
         title: 'Second blog Title',
         shortDescription: 'Second blog short description',
       },
-      STATUS_HTTP.BAD_REQUEST_400
+      STATUS_HTTP.NOT_FOUND_404
     );
 
     if (createdPost) {

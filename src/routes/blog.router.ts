@@ -18,7 +18,6 @@ import { blogInputModelValidation } from '../features/blogs/validation/blogInput
 import { PostViewModel } from '../features/posts/types/model/PostModels';
 import { blogPostInputModelValidation } from '../features/blogs/validation/blogPostInputModelValidation';
 import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
-import { DEFAULT_PAGINATION_PAYLOAD } from '../shared/constants/pagination';
 import { validatePayloadPagination } from '../shared/helpers/pagination';
 
 export const blogRouter = express.Router();
@@ -104,14 +103,11 @@ blogRouter.post(
   async (req: RequestWithParamsAndBody<{ blogId: string }, BlogPostInputModel>, res: Response<PostViewModel>) => {
     const blogId = req.params.blogId;
 
-    if (!blogId) {
-      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
-    }
-
     const blog = await blogsMongoRepository.findBlogById(blogId);
 
     if (!blog) {
       res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
+      return;
     }
 
     const createdPost = await blogsRepository.createPostForBlog(blogId, req.body);
@@ -131,6 +127,13 @@ blogRouter.get(
     res: Response<WithPagination<PostViewModel>>
   ) => {
     const blogId = req.params.blogId;
+
+    const blog = await blogsMongoRepository.findBlogById(blogId);
+
+    if (!blog) {
+      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
+      return;
+    }
 
     const pagination: PaginationPayload<PostViewModel> = validatePayloadPagination(req.query, 'createdAt');
 
