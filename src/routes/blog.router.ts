@@ -9,16 +9,15 @@ import {
 } from '../shared/types';
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
 import { authCheckMiddleware } from '../middlewares/authCheckMiddleware';
-import {
-  blogsMongoRepository,
-  blogsMongoRepository as blogsRepository,
-} from '../features/blogs/repositories/blogs-mongo-repository';
+import { blogsRepository as blogsRepository } from '../features/blogs/repositories/blogs-repository';
 import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../features/blogs/types/model/BlogModels';
 import { blogInputModelValidation } from '../features/blogs/validation/blogInputModelValidation';
 import { PostViewModel } from '../features/posts/types/model/PostModels';
 import { blogPostInputModelValidation } from '../features/blogs/validation/blogPostInputModelValidation';
 import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
 import { validatePayloadPagination } from '../shared/helpers/pagination';
+import { blogsService } from '../features/blogs/services/blogs-service';
+import { postsMongoRepository } from '../features/posts/repositories/posts-mongo-repository';
 
 export const blogRouter = express.Router();
 
@@ -29,10 +28,9 @@ blogRouter.get(
     res: Response<WithPagination<BlogViewModel>>
   ) => {
     const nameToFind = req?.query?.searchNameTerm || null;
-
     const pagination: PaginationPayload<BlogViewModel> = validatePayloadPagination(req.query, 'createdAt');
 
-    const foundedBlogs = await blogsRepository.findBlogs(nameToFind, pagination);
+    const foundedBlogs = await blogsService.findBlogs(nameToFind, pagination);
 
     res.status(STATUS_HTTP.OK_200).send(foundedBlogs);
   }
@@ -43,15 +41,22 @@ blogRouter.post(
   blogInputModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithBody<BlogInputModel>, res: Response<BlogViewModel>) => {
-    const createdBlog = await blogsRepository.createBlog(req.body);
+    const createdBlogId = await blogsService.createBlog(req.body);
 
-    res.status(STATUS_HTTP.CREATED_201).send(createdBlog);
+    const createdBlog = await blogsRepository.findBlogById(createdBlogId);
+
+    if (createdBlog) {
+      res.status(STATUS_HTTP.CREATED_201).send(createdBlog);
+      return;
+    }
+
+    res.sendStatus(STATUS_HTTP.INTERNAL_ERROR_500);
   }
 );
 blogRouter.get('/:blogId', async (req: RequestWithParams<{ blogId: string }>, res: Response<BlogViewModel>) => {
   const blogId = req.params.blogId;
 
-  const foundedBlog = await blogsRepository.findBlogById(blogId);
+  const foundedBlog = await blogsService.findBlogById(blogId);
 
   if (!foundedBlog) {
     res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
@@ -66,7 +71,7 @@ blogRouter.delete(
   async (req: RequestWithParams<{ blogId: string }>, res: Response<void>) => {
     const blogId = req.params.blogId;
 
-    const isVideoDeleted = await blogsRepository.deleteBlog(blogId);
+    const isVideoDeleted = await blogsService.deleteBlog(blogId);
 
     if (!isVideoDeleted) {
       res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
@@ -84,9 +89,9 @@ blogRouter.put(
   async (req: RequestWithParamsAndBody<{ blogId: string }, BlogInputModel>, res: Response<BlogViewModel>) => {
     const blogId = req.params.blogId;
 
-    const updatedBlog = await blogsRepository.updateBlog(blogId, req.body);
+    const isBlogUpdated = await blogsService.updateBlog(blogId, req.body);
 
-    if (!updatedBlog) {
+    if (!isBlogUpdated) {
       res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
       return;
     }
@@ -103,16 +108,10 @@ blogRouter.post(
   async (req: RequestWithParamsAndBody<{ blogId: string }, BlogPostInputModel>, res: Response<PostViewModel>) => {
     const blogId = req.params.blogId;
 
-    const blog = await blogsMongoRepository.findBlogById(blogId);
+    const createdPostId = await blogsService.createPostForBlog(blogId, req.body);
 
-    if (!blog) {
-      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
-      return;
-    }
-
-    const createdPost = await blogsRepository.createPostForBlog(blogId, req.body);
-
-    if (createdPost) {
+    if (createdPostId) {
+      const createdPost = await postsMongoRepository.findPostById(createdPostId);
       res.status(201).send(createdPost);
     } else {
       res.sendStatus(404);
@@ -127,17 +126,9 @@ blogRouter.get(
     res: Response<WithPagination<PostViewModel>>
   ) => {
     const blogId = req.params.blogId;
-
-    const blog = await blogsMongoRepository.findBlogById(blogId);
-
-    if (!blog) {
-      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
-      return;
-    }
-
     const pagination: PaginationPayload<PostViewModel> = validatePayloadPagination(req.query, 'createdAt');
 
-    const posts = await blogsRepository.getPostsByBlogId(blogId, pagination);
+    const posts = await blogsService.getPostsByBlogId(blogId, pagination);
 
     if (posts) {
       res.status(200).send(posts);

@@ -12,8 +12,8 @@ import { postInputModelValidation } from '../features/posts/validation/postInput
 import { postsMongoRepository as postsRepository } from '../features/posts/repositories/posts-mongo-repository';
 import { PostInputModel, PostViewModel } from '../features/posts/types/model/PostModels';
 import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
-import { DEFAULT_PAGINATION_PAYLOAD } from '../shared/constants/pagination';
 import { validatePayloadPagination } from '../shared/helpers/pagination';
+import { postsService } from '../features/posts/services/posts-service';
 
 export const postRouter = express.Router();
 
@@ -27,7 +27,7 @@ postRouter.get(
 
     const titleToFind = req?.query?.title || null;
 
-    const foundedPost = await postsRepository.findPosts(titleToFind, pagination);
+    const foundedPost = await postsService.findPosts(titleToFind, pagination);
 
     res.status(STATUS_HTTP.OK_200).send(foundedPost);
   }
@@ -39,19 +39,24 @@ postRouter.post(
   postInputModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithBody<PostInputModel>, res: Response<PostViewModel>) => {
-    const createdPost = await postsRepository.createPost(req.body);
+    const createdPostId = await postsService.createPost(req.body);
 
-    res.status(STATUS_HTTP.CREATED_201).send(createdPost);
+    if (createdPostId) {
+      const createdPost = await postsRepository.findPostById(createdPostId);
+      res.status(STATUS_HTTP.CREATED_201).send(createdPost);
+      return;
+    }
+
+    res.sendStatus(STATUS_HTTP.INTERNAL_ERROR_500);
   }
 );
 postRouter.get('/:postId', async (req: RequestWithParams<{ postId: string }>, res: Response<PostViewModel>) => {
   const postId = req.params.postId;
 
-  const foundedPost = await postsRepository.findPostById(postId);
+  const foundedPost = await postsService.findPostById(postId);
 
   if (!foundedPost) {
     res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
-    return;
   } else {
     res.status(STATUS_HTTP.OK_200).send(foundedPost);
   }
@@ -62,7 +67,7 @@ postRouter.delete(
   async (req: RequestWithParams<{ postId: string }>, res: Response<void>) => {
     const postId = req.params.postId;
 
-    const isVideoDeleted = await postsRepository.deletePost(postId);
+    const isVideoDeleted = await postsService.deletePost(postId);
 
     if (!isVideoDeleted) {
       res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
@@ -80,7 +85,7 @@ postRouter.put(
   async (req: RequestWithParamsAndBody<{ postId: string }, PostInputModel>, res: Response<PostViewModel>) => {
     const postId = req.params.postId;
 
-    const updatedPost = await postsRepository.updatePost(postId, req.body);
+    const updatedPost = await postsService.updatePost(postId, req.body);
 
     if (!updatedPost) {
       res.sendStatus(STATUS_HTTP.NOT_FOUND_404);

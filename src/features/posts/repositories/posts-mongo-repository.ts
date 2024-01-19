@@ -33,39 +33,13 @@ export const postsMongoRepository = {
     return (await postsCollection.aggregate(postWithBlogNameAggregate({ id: postId })).next()) as PostViewModel;
   },
 
-  async createPost(postInfo: PostInputModel) {
-    const { content, shortDescription, title, blogId } = postInfo;
+  async createPost(postToCreate: PostDbModel) {
+    const insertedResponse = await postsCollection.insertOne(postToCreate);
 
-    const generatedId = Math.floor(Math.random() * 10000000).toString();
-
-    const newPost: PostDbModel = {
-      id: generatedId,
-      content,
-      shortDescription,
-      title,
-      blogId,
-      createdAt: new Date().toISOString(),
-    };
-
-    const insertedResponse = await postsCollection.insertOne(newPost);
-
-    if (!!insertedResponse.insertedId) {
-      return this.findPostById(generatedId);
-    }
-
-    return undefined;
+    return !!insertedResponse.insertedId;
   },
 
-  async updatePost(postId: string, postInfo: PostInputModel) {
-    const { content, shortDescription, title, blogId } = postInfo;
-
-    const updateInfo: Omit<PostDbModel, 'id' | 'createdAt'> = {
-      content,
-      shortDescription,
-      title,
-      blogId,
-    };
-
+  async updatePost(postId: string, updateInfo: Omit<PostDbModel, 'id' | 'createdAt'>) {
     const updatedPost = await postsCollection.findOneAndUpdate(
       { id: postId },
       { $set: updateInfo },

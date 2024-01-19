@@ -1,9 +1,7 @@
-import express, { Request, Response } from 'express';
-import { localDb } from '../db/local-db';
+import express, { Response } from 'express';
 import { RequestWithBody, STATUS_HTTP } from '../shared/types';
 import { AuthModel } from '../features/auth/types/model/Auth';
 import { authModelValidation } from '../features/auth/validation/authModelValidation';
-import { validationResult } from 'express-validator';
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
 
 export const authRouter = express.Router();
