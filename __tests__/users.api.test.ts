@@ -130,6 +130,16 @@ describe('Users', () => {
       });
 
     await getRequest()
+      .get('/users?searchEmailTerm=il3&searchLoginTerm=Login123')
+      .expect(STATUS_HTTP.OK_200, {
+        pageSize: 10,
+        page: 1,
+        pagesCount: 1,
+        totalCount: 2,
+        items: [user3, user2],
+      });
+
+    await getRequest()
       .get('/users?searchLoginTerm=Login123')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,

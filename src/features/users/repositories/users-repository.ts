@@ -17,17 +17,17 @@ export const usersRepository = {
     searchEmailTerm: string | null
   ) {
     const { pageNumber, pageSize, sortBy, sortDirection } = pagination;
-    let filters = {};
+    const termsArray = [];
 
     if (searchLoginTerm) {
-      filters = { ...filters, login: getInsensitiveCaseSearchRegexString(searchLoginTerm) };
+      termsArray.push({ login: getInsensitiveCaseSearchRegexString(searchLoginTerm) });
     }
 
     if (searchEmailTerm) {
-      filters = { ...filters, email: getInsensitiveCaseSearchRegexString(searchEmailTerm) };
+      termsArray.push({ email: getInsensitiveCaseSearchRegexString(searchEmailTerm) });
     }
 
-    console.log('filters:', filters);
+    const filters = termsArray.length ? { $or: termsArray } : {};
 
     const totalCount = await usersCollection.countDocuments(filters);
 
