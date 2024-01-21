@@ -2,12 +2,14 @@ import { MongoClient } from 'mongodb';
 import { DB_NAME, MONGO_URI } from '../shared/helpers/env-constants';
 import { BlogViewModel } from '../features/blogs/types/model/BlogModels';
 import { PostDbModel } from '../features/posts/types/model/PostModels';
+import { UserDbModel } from '../features/users/types/model/UsersModels';
 
 const client = new MongoClient(MONGO_URI);
 export const dataBase = client.db(DB_NAME);
 
 export const blogsCollection = dataBase.collection<BlogViewModel>('blogs');
 export const postsCollection = dataBase.collection<PostDbModel>('posts');
+export const usersCollection = dataBase.collection<UserDbModel>('users');
 
 export async function runMongoDb() {
   try {

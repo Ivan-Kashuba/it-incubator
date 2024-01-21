@@ -1,7 +1,7 @@
 import { STATUS_HTTP } from '../../src/shared/types';
 import { getRequest, SuperTestBodyResponse } from './shared';
 import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../../src/features/blogs/types/model/BlogModels';
-import { ISO_STRING } from '../../src/shared/helpers/regex';
+import { ISO_STRING_REGEX } from '../../src/shared/helpers/regex';
 import { PostViewModel } from '../../src/features/posts/types/model/PostModels';
 
 export class BlogTestManagerClass {
@@ -17,7 +17,7 @@ export class BlogTestManagerClass {
         name: createdBlog.name,
         description: createdBlog.description,
         websiteUrl: createdBlog.websiteUrl,
-        createdAt: expect.stringMatching(ISO_STRING),
+        createdAt: expect.stringMatching(ISO_STRING_REGEX),
         isMembership: false,
       });
 
@@ -36,7 +36,7 @@ export class BlogTestManagerClass {
       expect(createdPost).toEqual({
         blogId: blog.id,
         title: data.title,
-        createdAt: expect.stringMatching(ISO_STRING),
+        createdAt: expect.stringMatching(ISO_STRING_REGEX),
         content: data.content,
         shortDescription: data.shortDescription,
         blogName: blog.name,

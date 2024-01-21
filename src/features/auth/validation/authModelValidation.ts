@@ -1,7 +1,7 @@
 import { checkSchema, Schema } from 'express-validator';
 
 const authModelValidationSchema: Schema = {
-  login: {
+  loginOrEmail: {
     trim: true,
     notEmpty: {
       errorMessage: 'Login is required',
