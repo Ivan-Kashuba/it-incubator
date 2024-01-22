@@ -7,13 +7,14 @@ import {
   STATUS_HTTP,
 } from '../shared/types';
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
-import { authCheckMiddleware } from '../middlewares/authCheckMiddleware';
-import { postInputModelValidation } from '../features/posts/validation/postInputModelValidation';
-import { postsMongoRepository as postsRepository } from '../features/posts/repositories/posts-mongo-repository';
-import { PostInputModel, PostViewModel } from '../features/posts/types/model/PostModels';
+import { adminAuthCheckMiddleware } from '../middlewares/adminAuthCheckMiddleware';
+
 import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
 import { validatePayloadPagination } from '../shared/helpers/pagination';
-import { postsService } from '../features/posts/services/posts-service';
+import { PostInputModel, PostViewModel } from '../domain/posts/types/model/PostModels';
+import { postsService } from '../domain/posts/services/posts-service';
+import { postInputModelValidation } from '../domain/posts/validation/postInputModelValidation';
+import { postsRepository } from '../domain/posts/repositories/posts-repository';
 
 export const postRouter = express.Router();
 
@@ -35,7 +36,7 @@ postRouter.get(
 
 postRouter.post(
   '/',
-  authCheckMiddleware,
+  adminAuthCheckMiddleware,
   postInputModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithBody<PostInputModel>, res: Response<PostViewModel>) => {
@@ -63,7 +64,7 @@ postRouter.get('/:postId', async (req: RequestWithParams<{ postId: string }>, re
 });
 postRouter.delete(
   '/:postId',
-  authCheckMiddleware,
+  adminAuthCheckMiddleware,
   async (req: RequestWithParams<{ postId: string }>, res: Response<void>) => {
     const postId = req.params.postId;
 
@@ -79,7 +80,7 @@ postRouter.delete(
 );
 postRouter.put(
   '/:postId',
-  authCheckMiddleware,
+  adminAuthCheckMiddleware,
   postInputModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithParamsAndBody<{ postId: string }, PostInputModel>, res: Response<PostViewModel>) => {

@@ -8,16 +8,16 @@ import {
   STATUS_HTTP,
 } from '../shared/types';
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
-import { authCheckMiddleware } from '../middlewares/authCheckMiddleware';
-import { blogsRepository as blogsRepository } from '../features/blogs/repositories/blogs-repository';
-import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../features/blogs/types/model/BlogModels';
-import { blogInputModelValidation } from '../features/blogs/validation/blogInputModelValidation';
-import { PostViewModel } from '../features/posts/types/model/PostModels';
-import { blogPostInputModelValidation } from '../features/blogs/validation/blogPostInputModelValidation';
+import { adminAuthCheckMiddleware } from '../middlewares/adminAuthCheckMiddleware';
 import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
 import { validatePayloadPagination } from '../shared/helpers/pagination';
-import { blogsService } from '../features/blogs/services/blogs-service';
-import { postsMongoRepository } from '../features/posts/repositories/posts-mongo-repository';
+import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../domain/blogs/types/model/BlogModels';
+import { blogsService } from '../domain/blogs/services/blogs-service';
+import { blogInputModelValidation } from '../domain/blogs/validation/blogInputModelValidation';
+import { blogsRepository } from '../domain/blogs/repositories/blogs-repository';
+import { blogPostInputModelValidation } from '../domain/blogs/validation/blogPostInputModelValidation';
+import { PostViewModel } from '../domain/posts/types/model/PostModels';
+import { postsRepository } from '../domain/posts/repositories/posts-repository';
 
 export const blogRouter = express.Router();
 
@@ -37,7 +37,7 @@ blogRouter.get(
 );
 blogRouter.post(
   '/',
-  authCheckMiddleware,
+  adminAuthCheckMiddleware,
   blogInputModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithBody<BlogInputModel>, res: Response<BlogViewModel>) => {
@@ -67,7 +67,7 @@ blogRouter.get('/:blogId', async (req: RequestWithParams<{ blogId: string }>, re
 });
 blogRouter.delete(
   '/:blogId',
-  authCheckMiddleware,
+  adminAuthCheckMiddleware,
   async (req: RequestWithParams<{ blogId: string }>, res: Response<void>) => {
     const blogId = req.params.blogId;
 
@@ -83,7 +83,7 @@ blogRouter.delete(
 );
 blogRouter.put(
   '/:blogId',
-  authCheckMiddleware,
+  adminAuthCheckMiddleware,
   blogInputModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithParamsAndBody<{ blogId: string }, BlogInputModel>, res: Response<BlogViewModel>) => {
@@ -102,7 +102,7 @@ blogRouter.put(
 
 blogRouter.post(
   '/:blogId/posts',
-  authCheckMiddleware,
+  adminAuthCheckMiddleware,
   blogPostInputModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithParamsAndBody<{ blogId: string }, BlogPostInputModel>, res: Response<PostViewModel>) => {
@@ -111,7 +111,7 @@ blogRouter.post(
     const createdPostId = await blogsService.createPostForBlog(blogId, req.body);
 
     if (createdPostId) {
-      const createdPost = await postsMongoRepository.findPostById(createdPostId);
+      const createdPost = await postsRepository.findPostById(createdPostId);
       res.status(201).send(createdPost);
     } else {
       res.sendStatus(404);

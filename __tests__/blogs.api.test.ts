@@ -1,8 +1,8 @@
 import { STATUS_HTTP } from '../src/shared/types';
 import { getRequest } from './util/shared';
-import { BlogInputModel, BlogViewModel } from '../src/features/blogs/types/model/BlogModels';
 import { BlogTestManager } from './util/BlogTestManager';
 import { ErrorResponse } from '../src/shared/types/Error';
+import { BlogInputModel, BlogViewModel } from '../src/domain/blogs/types/model/BlogModels';
 
 const blogInputCorrectData: BlogInputModel = {
   name: 'New blog',

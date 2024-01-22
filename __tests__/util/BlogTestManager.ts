@@ -1,8 +1,9 @@
 import { STATUS_HTTP } from '../../src/shared/types';
 import { getRequest, SuperTestBodyResponse } from './shared';
-import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../../src/features/blogs/types/model/BlogModels';
+
 import { ISO_STRING_REGEX } from '../../src/shared/helpers/regex';
-import { PostViewModel } from '../../src/features/posts/types/model/PostModels';
+import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../../src/domain/blogs/types/model/BlogModels';
+import { PostViewModel } from '../../src/domain/posts/types/model/PostModels';
 
 export class BlogTestManagerClass {
   async createBlog(data: BlogInputModel, expectedStatus = STATUS_HTTP.CREATED_201) {

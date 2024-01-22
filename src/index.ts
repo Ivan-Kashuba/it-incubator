@@ -1,11 +1,11 @@
 import { app } from './app';
 import { runMongoDb } from './db/mongoDb';
-import { PORT } from './shared/helpers/env-constants';
+import { envConfig } from './shared/helpers/env-config';
 
 const startApp = async () => {
   await runMongoDb();
-  app.listen(PORT, () => {
-    console.log(`Example app listening on port ${PORT}`);
+  app.listen(envConfig.PORT, () => {
+    console.log(`Example app listening on port ${envConfig.PORT}`);
   });
 };
 

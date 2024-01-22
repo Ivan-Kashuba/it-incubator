@@ -1,8 +1,8 @@
 import { STATUS_HTTP } from '../src/shared/types';
 import { getRequest } from './util/shared';
-import { UserViewModel } from '../src/features/users/types/model/UsersModels';
 import { UserManager } from './util/UserTestManager';
 import { ErrorResponse } from '../src/shared/types/Error';
+import { UserViewModel } from '../src/domain/users/types/model/UsersModels';
 
 let user1: UserViewModel = {} as UserViewModel;
 let user2: UserViewModel = {} as UserViewModel;

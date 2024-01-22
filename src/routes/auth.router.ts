@@ -1,9 +1,13 @@
-import express, { Response } from 'express';
+import express, { Response, Request } from 'express';
 import { RequestWithBody, STATUS_HTTP } from '../shared/types';
-import { AuthModel } from '../features/auth/types/model/Auth';
-import { authModelValidation } from '../features/auth/validation/authModelValidation';
+
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
-import { authService } from '../features/auth/services/auth-service';
+
+import { adminAuthCheckMiddleware } from '../middlewares/adminAuthCheckMiddleware';
+import { jwtService } from '../application/jwtService';
+import { AuthModel } from '../domain/auth/types/model/Auth';
+import { authService } from '../domain/auth/services/auth-service';
+import { authModelValidation } from '../domain/auth/validation/authModelValidation';
 
 export const authRouter = express.Router();
 
@@ -12,13 +16,33 @@ authRouter.post(
   authModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithBody<AuthModel>, res: Response) => {
-    const isAuthorised = await authService.loginByLoginOrEmail(req.body);
+    const token = await authService.loginByLoginOrEmail(req.body);
 
-    if (isAuthorised) {
-      res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
+    if (token) {
+      res.status(STATUS_HTTP.OK_200).send({
+        accessToken: token,
+      });
       return;
     }
 
     res.sendStatus(STATUS_HTTP.UNAUTHORIZED_401);
   }
 );
+
+authRouter.get('/me', adminAuthCheckMiddleware, async (req: Request, res: Response) => {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    res.sendStatus(STATUS_HTTP.UNAUTHORIZED_401);
+    return;
+  }
+
+  const userInfo = await jwtService.getUserInfoByToken(token);
+
+  if (userInfo) {
+    res.status(STATUS_HTTP.OK_200).send(userInfo);
+    return;
+  }
+
+  res.sendStatus(STATUS_HTTP.UNAUTHORIZED_401);
+});

@@ -1,10 +1,6 @@
 import { PostDbModel, PostInputModel, PostViewModel } from '../types/model/PostModels';
-import { getInsensitiveCaseSearchRegexString } from '../../../shared/helpers/getInsensitiveCaseSearchRegexString';
-import { postsCollection } from '../../../db/mongoDb';
-import { postWithBlogNameAggregate } from '../aggregations/postWithBlogNameAggregate';
 import { PaginationPayload, WithPagination } from '../../../shared/types/Pagination';
-import { createPaginationResponse, getSkip, getSortValue } from '../../../shared/helpers/pagination';
-import { postsMongoRepository, postsMongoRepository as postsRepository } from '../repositories/posts-mongo-repository';
+import { postsRepository } from '../repositories/posts-repository';
 
 export const postsService = {
   async findPosts(
@@ -32,7 +28,7 @@ export const postsService = {
       createdAt: new Date().toISOString(),
     };
 
-    const isPostCreated = await postsMongoRepository.createPost(newPost);
+    const isPostCreated = await postsRepository.createPost(newPost);
 
     return isPostCreated ? newPost?.id : undefined;
   },

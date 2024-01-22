@@ -1,9 +1,7 @@
 import { STATUS_HTTP } from '../../src/shared/types';
 import { getRequest, SuperTestBodyResponse } from './shared';
-import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../../src/features/blogs/types/model/BlogModels';
 import { ISO_STRING_REGEX } from '../../src/shared/helpers/regex';
-import { PostViewModel } from '../../src/features/posts/types/model/PostModels';
-import { UserCreateModel, UserViewModel } from '../../src/features/users/types/model/UsersModels';
+import { UserCreateModel, UserViewModel } from '../../src/domain/users/types/model/UsersModels';
 
 export class UserManagerClass {
   async createUser(data: UserCreateModel, expectedStatus = STATUS_HTTP.CREATED_201) {

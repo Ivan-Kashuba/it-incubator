@@ -1,11 +1,11 @@
-import { PostDbModel, PostInputModel, PostViewModel } from '../types/model/PostModels';
+import { PostDbModel, PostViewModel } from '../types/model/PostModels';
 import { getInsensitiveCaseSearchRegexString } from '../../../shared/helpers/getInsensitiveCaseSearchRegexString';
 import { postsCollection } from '../../../db/mongoDb';
 import { postWithBlogNameAggregate } from '../aggregations/postWithBlogNameAggregate';
 import { PaginationPayload, WithPagination } from '../../../shared/types/Pagination';
 import { createPaginationResponse, getSkip, getSortValue } from '../../../shared/helpers/pagination';
 
-export const postsMongoRepository = {
+export const postsRepository = {
   async findPosts(
     title: string | null,
     pagination: PaginationPayload<PostViewModel>

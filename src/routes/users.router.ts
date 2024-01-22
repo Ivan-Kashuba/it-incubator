@@ -1,20 +1,21 @@
 import express, { Response } from 'express';
 import { RequestWithBody, RequestWithParams, RequestWithQuery, STATUS_HTTP } from '../shared/types';
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
-import { inputUserValidation } from '../features/users/validation/inputUserValidation';
-import { UserCreateModel, UserViewModel } from '../features/users/types/model/UsersModels';
-import { usersService } from '../features/users/services/users-service';
-import { authCheckMiddleware } from '../middlewares/authCheckMiddleware';
+
+import { adminAuthCheckMiddleware } from '../middlewares/adminAuthCheckMiddleware';
 import { PaginationPayload } from '../shared/types/Pagination';
 import { validatePayloadPagination } from '../shared/helpers/pagination';
-import { usersRepository } from '../features/users/repositories/users-repository';
-import { mapDbUserToViewUser } from '../features/users/mapers/userMapers';
+import { inputUserValidation } from '../domain/users/validation/inputUserValidation';
+import { UserCreateModel, UserViewModel } from '../domain/users/types/model/UsersModels';
+import { usersService } from '../domain/users/services/users-service';
+import { usersRepository } from '../domain/users/repositories/users-repository';
+import { mapDbUserToViewUser } from '../domain/users/mapers/userMapers';
 
 export const usersRouter = express.Router();
 
 usersRouter.post(
   '/',
-  authCheckMiddleware,
+  adminAuthCheckMiddleware,
   inputUserValidation,
   validationCheckMiddleware,
   async (req: RequestWithBody<UserCreateModel>, res: Response) => {
@@ -33,7 +34,7 @@ usersRouter.post(
 
 usersRouter.get(
   '/',
-  authCheckMiddleware,
+  adminAuthCheckMiddleware,
   async (
     req: RequestWithQuery<
       { searchLoginTerm?: string; searchEmailTerm?: string } & Partial<PaginationPayload<UserViewModel>>
@@ -58,7 +59,7 @@ usersRouter.get(
 
 usersRouter.delete(
   '/:userId',
-  authCheckMiddleware,
+  adminAuthCheckMiddleware,
   async (req: RequestWithParams<{ userId: string }>, res: Response) => {
     const userId = req.params.userId;
 
