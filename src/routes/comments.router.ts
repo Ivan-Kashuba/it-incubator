@@ -36,6 +36,10 @@ commentsRouter.put(
 
     const commentToUpdate = await commentsRepository.findCommentById(commentId);
 
+    if (!commentToUpdate) {
+      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
+    }
+
     if (userId && userId !== commentToUpdate?.commentatorInfo.userId) {
       res.sendStatus(STATUS_HTTP.FORBIDDEN_403);
       return;
@@ -48,7 +52,7 @@ commentsRouter.put(
       return;
     }
 
-    res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
+    res.sendStatus(STATUS_HTTP.INTERNAL_ERROR_500);
   }
 );
 

@@ -53,7 +53,7 @@ export const commentsRepository = {
       .limit(pagination.pageSize)
       .toArray();
 
-    const totalCount = await usersCollection.countDocuments({ postId: postId });
+    const totalCount = await commentsCollection.countDocuments({ postId: postId });
 
     return createPaginationResponse<CommentViewModel>(pagination, mapDbCommentsToViewModel(dbComments), totalCount);
   },
