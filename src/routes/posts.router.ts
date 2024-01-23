@@ -105,7 +105,6 @@ postsRouter.put(
 
 postsRouter.get(
   '/:postId/comments',
-  userAuthCheckMiddleware,
   validationCheckMiddleware,
   async (
     req: RequestWithParamsAndQuery<{ postId: string }, Partial<PaginationPayload<CommentViewModel>>>,
