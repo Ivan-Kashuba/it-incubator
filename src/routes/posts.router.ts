@@ -21,6 +21,7 @@ import { CommentInputModel, CommentViewModel } from '../domain/comments/types/mo
 import { postCommentModelValidation } from '../domain/comments/validation/postCommentModelValidation';
 import { commentService } from '../domain/comments/services/comment-service';
 import { commentsRepository } from '../domain/comments/repositories/comments-repository';
+import { mapDbCommentToViewModel } from '../domain/comments/mappers/dbCommentToViewModel';
 
 export const postsRouter = express.Router();
 
@@ -105,7 +106,6 @@ postsRouter.put(
 
 postsRouter.get(
   '/:postId/comments',
-  validationCheckMiddleware,
   async (
     req: RequestWithParamsAndQuery<{ postId: string }, Partial<PaginationPayload<CommentViewModel>>>,
     res: Response<WithPagination<CommentViewModel>>
@@ -149,15 +149,7 @@ postsRouter.post(
       const commentFromDb = await commentsRepository.findCommentById(createdCommentId);
 
       if (commentFromDb) {
-        const commentViewModel: CommentViewModel = {
-          id: commentFromDb?.id,
-          commentatorInfo: commentFromDb?.commentatorInfo,
-          content: commentFromDb?.content,
-          createdAt: commentFromDb?.createdAt,
-        };
-
-        res.status(STATUS_HTTP.CREATED_201).send(commentViewModel);
-
+        res.status(STATUS_HTTP.CREATED_201).send(mapDbCommentToViewModel(commentFromDb));
         return;
       }
     }
