@@ -21,11 +21,10 @@ import { CommentInputModel, CommentViewModel } from '../domain/comments/types/mo
 import { postCommentModelValidation } from '../domain/comments/validation/postCommentModelValidation';
 import { commentService } from '../domain/comments/services/comment-service';
 import { commentsRepository } from '../domain/comments/repositories/comments-repository';
-import { BlogViewModel } from '../domain/blogs/types/model/BlogModels';
 
-export const postRouter = express.Router();
+export const postsRouter = express.Router();
 
-postRouter.get(
+postsRouter.get(
   '/',
   async (
     req: RequestWithQuery<{ title?: string } & Partial<PaginationPayload<PostViewModel>>>,
@@ -41,7 +40,7 @@ postRouter.get(
   }
 );
 
-postRouter.post(
+postsRouter.post(
   '/',
   adminAuthCheckMiddleware,
   postInputModelValidation,
@@ -58,7 +57,7 @@ postRouter.post(
     res.sendStatus(STATUS_HTTP.INTERNAL_ERROR_500);
   }
 );
-postRouter.get('/:postId', async (req: RequestWithParams<{ postId: string }>, res: Response<PostViewModel>) => {
+postsRouter.get('/:postId', async (req: RequestWithParams<{ postId: string }>, res: Response<PostViewModel>) => {
   const postId = req.params.postId;
 
   const foundedPost = await postsService.findPostById(postId);
@@ -69,7 +68,7 @@ postRouter.get('/:postId', async (req: RequestWithParams<{ postId: string }>, re
     res.status(STATUS_HTTP.OK_200).send(foundedPost);
   }
 });
-postRouter.delete(
+postsRouter.delete(
   '/:postId',
   adminAuthCheckMiddleware,
   async (req: RequestWithParams<{ postId: string }>, res: Response<void>) => {
@@ -85,7 +84,7 @@ postRouter.delete(
     }
   }
 );
-postRouter.put(
+postsRouter.put(
   '/:postId',
   adminAuthCheckMiddleware,
   postInputModelValidation,
@@ -104,7 +103,7 @@ postRouter.put(
   }
 );
 
-postRouter.get(
+postsRouter.get(
   '/:postId/comments',
   userAuthCheckMiddleware,
   validationCheckMiddleware,
@@ -129,7 +128,7 @@ postRouter.get(
   }
 );
 
-postRouter.post(
+postsRouter.post(
   '/:postId/comments',
   userAuthCheckMiddleware,
   postCommentModelValidation,
@@ -159,6 +158,8 @@ postRouter.post(
         };
 
         res.status(STATUS_HTTP.CREATED_201).send(commentViewModel);
+
+        return;
       }
     }
 

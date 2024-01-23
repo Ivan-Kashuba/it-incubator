@@ -1,5 +1,5 @@
-import { BlogDBModel } from '../../features/blogs/types/model/BlogModels';
-import { PostDbModel } from '../../features/posts/types/model/PostModels';
+import { BlogDBModel } from '../../domain/blogs/types/model/BlogModels';
+import { PostDbModel } from '../../domain/posts/types/model/PostModels';
 
 export interface DataBase {
   blogs: BlogDBModel[];

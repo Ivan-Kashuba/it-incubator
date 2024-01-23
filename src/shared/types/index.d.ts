@@ -1,4 +1,4 @@
-import { UserTokenInfo } from '../../features/auth/types/model/Auth';
+import { UserTokenInfo } from '../../domain/auth/types/model/Auth';
 
 declare global {
   namespace Express {

@@ -15,6 +15,19 @@ export const commentsRepository = {
     return null;
   },
 
+  async updateCommentById(commentId: string, commentContent: string) {
+    const createdCommentResponse = await commentsCollection.updateOne(
+      { id: commentId },
+      {
+        $set: {
+          content: commentContent,
+        },
+      }
+    );
+
+    return createdCommentResponse.matchedCount === 1;
+  },
+
   async findCommentById(commentId: string) {
     const comment = await commentsCollection.findOne({ id: commentId });
 
@@ -23,6 +36,11 @@ export const commentsRepository = {
     }
 
     return null;
+  },
+
+  async deleteCommentById(commentId: string) {
+    const deleteResult = await commentsCollection.deleteOne({ id: commentId });
+    return deleteResult.deletedCount === 1;
   },
 
   async findCommentsByPostId(postId: string, pagination: PaginationPayload<CommentViewModel>) {

@@ -2,8 +2,9 @@ import express from 'express';
 import { testRouter } from './routes/tests.router';
 import { authRouter } from './routes/auth.router';
 import { blogRouter } from './routes/blog.router';
-import { postRouter } from './routes/posts.router';
+import { postsRouter } from './routes/posts.router';
 import { usersRouter } from './routes/users.router';
+import { commentsRouter } from './routes/comments.router';
 
 export const app = express();
 const jsonBodyMiddleware = express.json();
@@ -14,7 +15,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/blogs', blogRouter);
-app.use('/posts', postRouter);
+app.use('/posts', postsRouter);
 app.use('/users', usersRouter);
+app.use('/comments', commentsRouter);
 app.use('/auth', authRouter);
 app.use('/testing', testRouter);
