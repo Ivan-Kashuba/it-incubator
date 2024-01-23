@@ -1,4 +1,5 @@
 export type UserDbModel = {
+  _id?: string;
   id: string;
   login: string;
   email: string;

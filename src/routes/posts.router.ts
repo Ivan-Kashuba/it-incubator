@@ -3,6 +3,7 @@ import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
+  RequestWithParamsAndQuery,
   RequestWithQuery,
   STATUS_HTTP,
 } from '../shared/types';
@@ -15,6 +16,12 @@ import { PostInputModel, PostViewModel } from '../domain/posts/types/model/PostM
 import { postsService } from '../domain/posts/services/posts-service';
 import { postInputModelValidation } from '../domain/posts/validation/postInputModelValidation';
 import { postsRepository } from '../domain/posts/repositories/posts-repository';
+import { userAuthCheckMiddleware } from '../middlewares/userAuthCheckMiddleware';
+import { CommentInputModel, CommentViewModel } from '../domain/comments/types/model/CommentsModels';
+import { postCommentModelValidation } from '../domain/comments/validation/postCommentModelValidation';
+import { commentService } from '../domain/comments/services/comment-service';
+import { commentsRepository } from '../domain/comments/repositories/comments-repository';
+import { BlogViewModel } from '../domain/blogs/types/model/BlogModels';
 
 export const postRouter = express.Router();
 
@@ -94,5 +101,67 @@ postRouter.put(
     }
 
     res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
+  }
+);
+
+postRouter.get(
+  '/:postId/comments',
+  userAuthCheckMiddleware,
+  validationCheckMiddleware,
+  async (
+    req: RequestWithParamsAndQuery<{ postId: string }, Partial<PaginationPayload<CommentViewModel>>>,
+    res: Response<WithPagination<CommentViewModel>>
+  ) => {
+    const postId = req.params.postId;
+
+    const pagination: PaginationPayload<CommentViewModel> = validatePayloadPagination(req.query, 'createdAt');
+
+    const post = await postsRepository.findPostById(postId);
+
+    if (!post) {
+      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
+      return;
+    }
+
+    const comments = await commentsRepository.findCommentsByPostId(postId, pagination);
+
+    res.status(STATUS_HTTP.OK_200).send(comments);
+  }
+);
+
+postRouter.post(
+  '/:postId/comments',
+  userAuthCheckMiddleware,
+  postCommentModelValidation,
+  validationCheckMiddleware,
+  async (req: RequestWithParamsAndBody<{ postId: string }, CommentInputModel>, res: Response<CommentViewModel>) => {
+    const postId = req.params.postId;
+    const content = req.body.content;
+
+    const post = await postsRepository.findPostById(postId);
+
+    if (!post) {
+      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
+      return;
+    }
+
+    const createdCommentId = await commentService.createCommentForPost(postId, content, req.user);
+
+    if (createdCommentId) {
+      const commentFromDb = await commentsRepository.findCommentById(createdCommentId);
+
+      if (commentFromDb) {
+        const commentViewModel: CommentViewModel = {
+          id: commentFromDb?.id,
+          commentatorInfo: commentFromDb?.commentatorInfo,
+          content: commentFromDb?.content,
+          createdAt: commentFromDb?.createdAt,
+        };
+
+        res.status(STATUS_HTTP.CREATED_201).send(commentViewModel);
+      }
+    }
+
+    res.sendStatus(STATUS_HTTP.INTERNAL_ERROR_500);
   }
 );
