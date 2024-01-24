@@ -38,6 +38,7 @@ commentsRouter.put(
 
     if (!commentToUpdate) {
       res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
+      return;
     }
 
     if (userId && userId !== commentToUpdate?.commentatorInfo.userId) {
