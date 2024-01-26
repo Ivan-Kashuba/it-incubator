@@ -1,7 +1,7 @@
 import { UserCreateModel, UserDbModel, UserViewModel } from '../types/model/UsersModels';
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcrypt';
-import { usersRepository } from '../repositories/users-repository';
+import { usersRepository } from '../../../repositories/users-repository';
 import { PaginationPayload } from '../../../shared/types/Pagination';
 
 export const usersService = {

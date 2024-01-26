@@ -14,10 +14,10 @@ import { validatePayloadPagination } from '../shared/helpers/pagination';
 import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../domain/blogs/types/model/BlogModels';
 import { blogsService } from '../domain/blogs/services/blogs-service';
 import { blogInputModelValidation } from '../domain/blogs/validation/blogInputModelValidation';
-import { blogsRepository } from '../domain/blogs/repositories/blogs-repository';
+import { blogsRepository } from '../repositories/blogs-repository';
 import { blogPostInputModelValidation } from '../domain/blogs/validation/blogPostInputModelValidation';
 import { PostViewModel } from '../domain/posts/types/model/PostModels';
-import { postsRepository } from '../domain/posts/repositories/posts-repository';
+import { postsRepository } from '../repositories/posts-repository';
 
 export const blogRouter = express.Router();
 

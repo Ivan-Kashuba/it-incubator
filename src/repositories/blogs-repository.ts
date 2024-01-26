@@ -1,9 +1,9 @@
-import { BlogViewModel } from '../types/model/BlogModels';
-import { blogsCollection, postsCollection } from '../../../db/mongoDb';
-import { getInsensitiveCaseSearchRegexString } from '../../../shared/helpers/getInsensitiveCaseSearchRegexString';
-import { PostDbModel, PostViewModel } from '../../posts/types/model/PostModels';
-import { PaginationPayload, WithPagination } from '../../../shared/types/Pagination';
-import { createPaginationResponse, getSkip, getSortValue } from '../../../shared/helpers/pagination';
+import { BlogViewModel } from '../domain/blogs/types/model/BlogModels';
+import { blogsCollection, postsCollection } from '../db/mongoDb';
+import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsensitiveCaseSearchRegexString';
+import { PostDbModel, PostViewModel } from '../domain/posts/types/model/PostModels';
+import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
+import { createPaginationResponse, getSkip, getSortValue } from '../shared/helpers/pagination';
 
 export const blogsRepository = {
   async findBlogs(

@@ -1,7 +1,7 @@
 import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../types/model/BlogModels';
 import { PostDbModel, PostViewModel } from '../../posts/types/model/PostModels';
 import { PaginationPayload, WithPagination } from '../../../shared/types/Pagination';
-import { blogsRepository as blogsRepository } from '../repositories/blogs-repository';
+import { blogsRepository as blogsRepository } from '../../../repositories/blogs-repository';
 
 export const blogsService = {
   async findBlogs(

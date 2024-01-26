@@ -3,7 +3,7 @@ import { getAdminAllowedRequest, getUserAuthorisedRequest, SuperTestBodyResponse
 
 import { ISO_STRING_REGEX } from '../../src/shared/helpers/regex';
 import { PostInputModel, PostViewModel } from '../../src/domain/posts/types/model/PostModels';
-import { blogsRepository } from '../../src/domain/blogs/repositories/blogs-repository';
+import { blogsRepository } from '../../src/repositories/blogs-repository';
 import { CommentInputModel } from '../../src/domain/comments/types/model/CommentsModels';
 
 export class PostTestManagerClass {

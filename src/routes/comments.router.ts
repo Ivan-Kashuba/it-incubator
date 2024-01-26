@@ -1,7 +1,7 @@
 import express, { Response } from 'express';
 import { RequestWithParams, RequestWithParamsAndBody, STATUS_HTTP } from '../shared/types/index';
 import { CommentInputModel, CommentViewModel } from '../domain/comments/types/model/CommentsModels';
-import { commentsRepository } from '../domain/comments/repositories/comments-repository';
+import { commentsRepository } from '../repositories/comments-repository';
 import { mapDbCommentToViewModel } from '../domain/comments/mappers/dbCommentToViewModel';
 import { userAuthCheckMiddleware } from '../middlewares/userAuthCheckMiddleware';
 import { postCommentModelValidation } from '../domain/comments/validation/postCommentModelValidation';

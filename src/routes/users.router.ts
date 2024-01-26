@@ -8,8 +8,8 @@ import { validatePayloadPagination } from '../shared/helpers/pagination';
 import { inputUserValidation } from '../domain/users/validation/inputUserValidation';
 import { UserCreateModel, UserViewModel } from '../domain/users/types/model/UsersModels';
 import { usersService } from '../domain/users/services/users-service';
-import { usersRepository } from '../domain/users/repositories/users-repository';
-import { mapDbUserToViewUser } from '../domain/users/mapers/userMapers';
+import { usersRepository } from '../repositories/users-repository';
+import { mapDbUserToViewUser } from '../domain/users/mappers/userMapers';
 
 export const usersRouter = express.Router();
 

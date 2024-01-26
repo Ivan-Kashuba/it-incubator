@@ -15,12 +15,12 @@ import { validatePayloadPagination } from '../shared/helpers/pagination';
 import { PostInputModel, PostViewModel } from '../domain/posts/types/model/PostModels';
 import { postsService } from '../domain/posts/services/posts-service';
 import { postInputModelValidation } from '../domain/posts/validation/postInputModelValidation';
-import { postsRepository } from '../domain/posts/repositories/posts-repository';
+import { postsRepository } from '../repositories/posts-repository';
 import { userAuthCheckMiddleware } from '../middlewares/userAuthCheckMiddleware';
 import { CommentInputModel, CommentViewModel } from '../domain/comments/types/model/CommentsModels';
 import { postCommentModelValidation } from '../domain/comments/validation/postCommentModelValidation';
 import { commentService } from '../domain/comments/services/comment-service';
-import { commentsRepository } from '../domain/comments/repositories/comments-repository';
+import { commentsRepository } from '../repositories/comments-repository';
 import { mapDbCommentToViewModel } from '../domain/comments/mappers/dbCommentToViewModel';
 
 export const postsRouter = express.Router();

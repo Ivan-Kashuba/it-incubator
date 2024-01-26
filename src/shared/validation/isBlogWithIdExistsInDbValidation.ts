@@ -1,4 +1,4 @@
-import { blogsRepository } from '../../domain/blogs/repositories/blogs-repository';
+import { blogsRepository } from '../../repositories/blogs-repository';
 
 export const isBlogWithIdExistsInDbValidation = {
   notEmpty: {

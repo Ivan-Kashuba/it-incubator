@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { AuthModel } from '../types/model/Auth';
-import { usersRepository } from '../../users/repositories/users-repository';
+import { usersRepository } from '../../../repositories/users-repository';
 import { jwtService } from '../../../application/jwtService';
 
 export const authService = {

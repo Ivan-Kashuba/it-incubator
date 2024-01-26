@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { UserTokenInfo } from '../../auth/types/model/Auth';
-import { commentsRepository } from '../repositories/comments-repository';
+import { commentsRepository } from '../../../repositories/comments-repository';
 
 export const commentService = {
   async createCommentForPost(postId: string, content: string, userInfo: UserTokenInfo) {

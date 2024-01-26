@@ -1,4 +1,4 @@
-import { postsRepository } from '../../domain/posts/repositories/posts-repository';
+import { postsRepository } from '../../repositories/posts-repository';
 
 export const isCommentWithIdExistsInDb = {
   notEmpty: {

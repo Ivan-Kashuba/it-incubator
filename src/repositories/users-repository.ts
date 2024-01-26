@@ -1,9 +1,9 @@
-import { UserDbModel, UserViewModel } from '../types/model/UsersModels';
-import { usersCollection } from '../../../db/mongoDb';
-import { PaginationPayload } from '../../../shared/types/Pagination';
-import { getInsensitiveCaseSearchRegexString } from '../../../shared/helpers/getInsensitiveCaseSearchRegexString';
-import { createPaginationResponse, getSkip, getSortValue } from '../../../shared/helpers/pagination';
-import { mapDbUsersToViewUsers } from '../mapers/userMapers';
+import { UserDbModel, UserViewModel } from '../domain/users/types/model/UsersModels';
+import { usersCollection } from '../db/mongoDb';
+import { PaginationPayload } from '../shared/types/Pagination';
+import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsensitiveCaseSearchRegexString';
+import { createPaginationResponse, getSkip, getSortValue } from '../shared/helpers/pagination';
+import { mapDbUsersToViewUsers } from '../domain/users/mappers/userMapers';
 
 export const usersRepository = {
   async createUser(user: UserDbModel) {

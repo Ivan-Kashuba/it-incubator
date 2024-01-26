@@ -1,6 +1,6 @@
 import { PostDbModel, PostInputModel, PostViewModel } from '../types/model/PostModels';
 import { PaginationPayload, WithPagination } from '../../../shared/types/Pagination';
-import { postsRepository } from '../repositories/posts-repository';
+import { postsRepository } from '../../../repositories/posts-repository';
 
 export const postsService = {
   async findPosts(

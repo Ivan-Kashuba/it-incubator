@@ -1,9 +1,9 @@
-import { PostDbModel, PostViewModel } from '../types/model/PostModels';
-import { getInsensitiveCaseSearchRegexString } from '../../../shared/helpers/getInsensitiveCaseSearchRegexString';
-import { postsCollection } from '../../../db/mongoDb';
-import { postWithBlogNameAggregate } from '../aggregations/postWithBlogNameAggregate';
-import { PaginationPayload, WithPagination } from '../../../shared/types/Pagination';
-import { createPaginationResponse, getSkip, getSortValue } from '../../../shared/helpers/pagination';
+import { PostDbModel, PostViewModel } from '../domain/posts/types/model/PostModels';
+import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsensitiveCaseSearchRegexString';
+import { postsCollection } from '../db/mongoDb';
+import { postWithBlogNameAggregate } from '../domain/posts/aggregations/postWithBlogNameAggregate';
+import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
+import { createPaginationResponse, getSkip, getSortValue } from '../shared/helpers/pagination';
 
 export const postsRepository = {
   async findPosts(

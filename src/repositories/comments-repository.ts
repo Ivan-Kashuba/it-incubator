@@ -1,8 +1,8 @@
-import { commentsCollection, usersCollection } from '../../../db/mongoDb';
-import { CommentDbModel, CommentViewModel } from '../types/model/CommentsModels';
-import { PaginationPayload } from '../../../shared/types/Pagination';
-import { createPaginationResponse, getSkip, getSortValue } from '../../../shared/helpers/pagination';
-import { mapDbCommentsToViewModel } from '../mappers/dbCommentToViewModel';
+import { commentsCollection, usersCollection } from '../db/mongoDb';
+import { CommentDbModel, CommentViewModel } from '../domain/comments/types/model/CommentsModels';
+import { PaginationPayload } from '../shared/types/Pagination';
+import { createPaginationResponse, getSkip, getSortValue } from '../shared/helpers/pagination';
+import { mapDbCommentsToViewModel } from '../domain/comments/mappers/dbCommentToViewModel';
 
 export const commentsRepository = {
   async createCommentForPost(comment: CommentDbModel) {
