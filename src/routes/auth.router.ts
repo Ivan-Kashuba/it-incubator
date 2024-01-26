@@ -8,6 +8,7 @@ import { jwtService } from '../application/jwtService';
 import { AuthModel } from '../domain/auth/types/model/Auth';
 import { authService } from '../domain/auth/services/auth-service';
 import { authModelValidation } from '../domain/auth/validation/authModelValidation';
+import { userAuthCheckMiddleware } from '../middlewares/userAuthCheckMiddleware';
 
 export const authRouter = express.Router();
 
@@ -29,7 +30,7 @@ authRouter.post(
   }
 );
 
-authRouter.get('/me', adminAuthCheckMiddleware, async (req: Request, res: Response) => {
+authRouter.get('/me', userAuthCheckMiddleware, async (req: Request, res: Response) => {
   const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {

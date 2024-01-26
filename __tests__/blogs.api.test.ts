@@ -1,5 +1,5 @@
 import { STATUS_HTTP } from '../src/shared/types';
-import { getRequest } from './util/shared';
+import { getAdminAllowedRequest } from './util/shared';
 import { BlogTestManager } from './util/BlogTestManager';
 import { ErrorResponse } from '../src/shared/types/Error';
 import { BlogInputModel, BlogViewModel } from '../src/domain/blogs/types/model/BlogModels';
@@ -23,23 +23,23 @@ let blog3: BlogViewModel = {} as BlogViewModel;
 
 describe('Blogs', () => {
   beforeAll(async () => {
-    await getRequest().delete('/testing/all-data');
+    await getAdminAllowedRequest().delete('/testing/all-data');
   });
 
   it('Should return 200 and empty blogs list', async () => {
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/blogs')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 0, totalCount: 0, items: [] });
   });
 
   it('Should return 404 for not existing blog', async () => {
-    await getRequest().get('/blogs/-99999999999999').expect(STATUS_HTTP.NOT_FOUND_404);
+    await getAdminAllowedRequest().get('/blogs/-99999999999999').expect(STATUS_HTTP.NOT_FOUND_404);
   });
 
   it('Should not be created with incorrect input data', async () => {
-    await getRequest().post('/blogs').send(blogIncorrectInputData).expect(STATUS_HTTP.BAD_REQUEST_400);
-    await getRequest().post('/blogs').send({}).expect(STATUS_HTTP.BAD_REQUEST_400);
-    await getRequest()
+    await getAdminAllowedRequest().post('/blogs').send(blogIncorrectInputData).expect(STATUS_HTTP.BAD_REQUEST_400);
+    await getAdminAllowedRequest().post('/blogs').send({}).expect(STATUS_HTTP.BAD_REQUEST_400);
+    await getAdminAllowedRequest()
       .get('/blogs')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 0, totalCount: 0, items: [] });
   });
@@ -50,7 +50,7 @@ describe('Blogs', () => {
       firstBlog = createdBlog;
     }
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/blogs')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 1, totalCount: 1, items: [firstBlog] });
   });
@@ -70,33 +70,39 @@ describe('Blogs', () => {
     expect(errorsMessages.length).toBe(2);
     expect(createResponse.body).toEqual(expectedError);
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/blogs')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 1, totalCount: 1, items: [firstBlog] });
   });
 
   it('Should not update with incorrect input data', async () => {
-    await getRequest().put(`/blogs/${firstBlog.id}`).send(blogIncorrectInputData).expect(STATUS_HTTP.BAD_REQUEST_400);
+    await getAdminAllowedRequest()
+      .put(`/blogs/${firstBlog.id}`)
+      .send(blogIncorrectInputData)
+      .expect(STATUS_HTTP.BAD_REQUEST_400);
   });
 
   it('Should update with correct input data', async () => {
-    await getRequest().put(`/blogs/${firstBlog.id}`).send(blogInputCorrectData).expect(STATUS_HTTP.NO_CONTENT_204);
+    await getAdminAllowedRequest()
+      .put(`/blogs/${firstBlog.id}`)
+      .send(blogInputCorrectData)
+      .expect(STATUS_HTTP.NO_CONTENT_204);
     firstBlog = { ...firstBlog, ...blogInputCorrectData };
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/blogs')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 1, totalCount: 1, items: [firstBlog] });
   });
 
   it('Delete blog with unexisted id', async () => {
-    await getRequest().delete(`/blogs/-99999999999999`).expect(STATUS_HTTP.NOT_FOUND_404);
-    await getRequest()
+    await getAdminAllowedRequest().delete(`/blogs/-99999999999999`).expect(STATUS_HTTP.NOT_FOUND_404);
+    await getAdminAllowedRequest()
       .get('/blogs')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 1, totalCount: 1, items: [firstBlog] });
   });
 
   it('Delete blog with correct id', async () => {
-    await getRequest().delete(`/blogs/${firstBlog.id}`).expect(STATUS_HTTP.NO_CONTENT_204);
-    await getRequest()
+    await getAdminAllowedRequest().delete(`/blogs/${firstBlog.id}`).expect(STATUS_HTTP.NO_CONTENT_204);
+    await getAdminAllowedRequest()
       .get('/blogs')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 0, totalCount: 0, items: [] });
   });
@@ -110,7 +116,7 @@ describe('Blogs', () => {
     blog2 = createdBlog2!;
     blog3 = createdBlog3!;
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/blogs')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -120,7 +126,7 @@ describe('Blogs', () => {
         items: [blog3, blog2, blog1],
       });
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/blogs?searchNameTerm=blog')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -130,7 +136,7 @@ describe('Blogs', () => {
         items: [blog2, blog1],
       });
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/blogs?searchNameTerm=blog1')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -142,7 +148,7 @@ describe('Blogs', () => {
   });
 
   it('Sorting and filtering works correct', async () => {
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/blogs?pageSize=2')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 2,
@@ -152,7 +158,7 @@ describe('Blogs', () => {
         items: [blog3, blog2],
       });
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/blogs?searchNameTerm=blog&pageNumber=1')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -161,7 +167,7 @@ describe('Blogs', () => {
         totalCount: 2,
         items: [blog2, blog1],
       });
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/blogs?searchNameTerm=blog&pageNumber=1&pageSize=1')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 1,
@@ -171,7 +177,7 @@ describe('Blogs', () => {
         items: [blog2],
       });
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/blogs?searchNameTerm=blog1')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,

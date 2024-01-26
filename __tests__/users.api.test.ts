@@ -1,6 +1,6 @@
 import { STATUS_HTTP } from '../src/shared/types';
-import { getRequest } from './util/shared';
-import { UserManager } from './util/UserTestManager';
+import { getAdminAllowedRequest } from './util/shared';
+import { UserTestManager } from './util/UserTestManager';
 import { ErrorResponse } from '../src/shared/types/Error';
 import { UserViewModel } from '../src/domain/users/types/model/UsersModels';
 
@@ -10,22 +10,22 @@ let user3: UserViewModel = {} as UserViewModel;
 
 describe('Users', () => {
   beforeAll(async () => {
-    await getRequest().delete('/testing/all-data');
+    await getAdminAllowedRequest().delete('/testing/all-data');
   });
 
   it('Should return 200 and empty blogs list', async () => {
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/users')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 0, totalCount: 0, items: [] });
   });
 
   it('Should return 404 for not existing blog', async () => {
-    await getRequest().get('/users/-99999999999999').expect(STATUS_HTTP.NOT_FOUND_404);
+    await getAdminAllowedRequest().get('/users/-99999999999999').expect(STATUS_HTTP.NOT_FOUND_404);
   });
 
   it('Should not be created with incorrect input data', async () => {
-    await getRequest().post('/users').send({}).expect(STATUS_HTTP.BAD_REQUEST_400);
-    const { createResponse } = await UserManager.createUser(
+    await getAdminAllowedRequest().post('/users').send({}).expect(STATUS_HTTP.BAD_REQUEST_400);
+    const { createResponse } = await UserTestManager.createUser(
       {
         email: 'EmailUncorrect',
         login: 'L',
@@ -36,12 +36,12 @@ describe('Users', () => {
     const errorsMessages = createResponse.body?.errorsMessages;
     expect(errorsMessages.length).toBe(2);
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/users')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 0, totalCount: 0, items: [] });
   });
   it('Should create user with correct input data', async () => {
-    const { createdUser } = await UserManager.createUser({
+    const { createdUser } = await UserTestManager.createUser({
       email: 'email@gm.com',
       login: 'Login',
       password: 'qwerty123',
@@ -50,13 +50,13 @@ describe('Users', () => {
       user1 = createdUser;
     }
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/users')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 1, totalCount: 1, items: [user1] });
   });
 
   it('Should not create user with data which already exists', async () => {
-    const { createResponse } = await UserManager.createUser(
+    const { createResponse } = await UserTestManager.createUser(
       {
         email: 'email@gm.com',
         login: 'Login',
@@ -74,33 +74,33 @@ describe('Users', () => {
 
     expect(createResponse.body).toEqual(expectedError);
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/users')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 1, totalCount: 1, items: [user1] });
   });
 
   it('Delete user with unexisted id', async () => {
-    await getRequest().delete(`/users/-99999999999999`).expect(STATUS_HTTP.NOT_FOUND_404);
-    await getRequest()
+    await getAdminAllowedRequest().delete(`/users/-99999999999999`).expect(STATUS_HTTP.NOT_FOUND_404);
+    await getAdminAllowedRequest()
       .get('/users')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 1, totalCount: 1, items: [user1] });
   });
 
   it('Delete user with correct id', async () => {
-    await getRequest().delete(`/users/${user1.id}`).expect(STATUS_HTTP.NO_CONTENT_204);
-    await getRequest()
+    await getAdminAllowedRequest().delete(`/users/${user1.id}`).expect(STATUS_HTTP.NO_CONTENT_204);
+    await getAdminAllowedRequest()
       .get('/users')
       .expect(STATUS_HTTP.OK_200, { pageSize: 10, page: 1, pagesCount: 0, totalCount: 0, items: [] });
   });
 
   it('search works correct', async () => {
-    const { createdUser: createdUser2 } = await UserManager.createUser({
+    const { createdUser: createdUser2 } = await UserTestManager.createUser({
       email: 'user2@outlook.com',
       login: 'Login123',
       password: 'qwerty123',
     });
 
-    const { createdUser: createdUser3 } = await UserManager.createUser({
+    const { createdUser: createdUser3 } = await UserTestManager.createUser({
       email: 'email3@gm.com',
       login: 'Login1234',
       password: 'qwerty123',
@@ -109,7 +109,7 @@ describe('Users', () => {
     user2 = createdUser2!;
     user3 = createdUser3!;
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/users')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -119,7 +119,7 @@ describe('Users', () => {
         items: [user3, user2],
       });
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/users?searchEmailTerm=outlook')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -129,7 +129,7 @@ describe('Users', () => {
         items: [user2],
       });
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/users?searchEmailTerm=il3&searchLoginTerm=Login123')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -139,7 +139,7 @@ describe('Users', () => {
         items: [user3, user2],
       });
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/users?searchLoginTerm=Login123')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,

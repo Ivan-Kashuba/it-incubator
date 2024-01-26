@@ -1,5 +1,5 @@
 import { STATUS_HTTP } from '../../src/shared/types';
-import { getRequest, SuperTestBodyResponse } from './shared';
+import { getAdminAllowedRequest, SuperTestBodyResponse } from './shared';
 
 import { ISO_STRING_REGEX } from '../../src/shared/helpers/regex';
 import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../../src/domain/blogs/types/model/BlogModels';
@@ -7,7 +7,7 @@ import { PostViewModel } from '../../src/domain/posts/types/model/PostModels';
 
 export class BlogTestManagerClass {
   async createBlog(data: BlogInputModel, expectedStatus = STATUS_HTTP.CREATED_201) {
-    const createResponse = await getRequest().post('/blogs').send(data).expect(expectedStatus);
+    const createResponse = await getAdminAllowedRequest().post('/blogs').send(data).expect(expectedStatus);
 
     if (expectedStatus === STATUS_HTTP.CREATED_201) {
       const successfulCreateResponse: SuperTestBodyResponse<BlogViewModel> = createResponse;
@@ -28,7 +28,10 @@ export class BlogTestManagerClass {
     return { createResponse };
   }
   async createPostForBlog(blog: BlogViewModel, data: BlogPostInputModel, expectedStatus = STATUS_HTTP.CREATED_201) {
-    const createResponse = await getRequest().post(`/blogs/${blog.id}/posts`).send(data).expect(expectedStatus);
+    const createResponse = await getAdminAllowedRequest()
+      .post(`/blogs/${blog.id}/posts`)
+      .send(data)
+      .expect(expectedStatus);
 
     if (expectedStatus === STATUS_HTTP.CREATED_201) {
       const successfulCreateResponse: SuperTestBodyResponse<PostViewModel> = createResponse;

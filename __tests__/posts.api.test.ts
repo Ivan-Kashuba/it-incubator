@@ -1,11 +1,15 @@
 import { STATUS_HTTP } from '../src/shared/types';
-import { getRequest } from './util/shared';
+import { getAdminAllowedRequest, getRequest, getUserAuthorisedRequest } from './util/shared';
 
 import { BlogTestManager } from './util/BlogTestManager';
 
 import { ErrorResponse } from '../src/shared/types/Error';
 import { PostInputModel, PostViewModel } from '../src/domain/posts/types/model/PostModels';
 import { BlogInputModel, BlogViewModel } from '../src/domain/blogs/types/model/BlogModels';
+import { UserTestManager } from './util/UserTestManager';
+import { AuthTestManager } from './util/AuthTestManager';
+import { ISO_STRING_REGEX } from '../src/shared/helpers/regex';
+import { UserViewModel } from '../src/domain/users/types/model/UsersModels';
 
 const blogInputCorrectData: BlogInputModel = {
   name: 'New blog',
@@ -40,13 +44,15 @@ const getPostCorrectInputData = (blogId: string): PostInputModel => {
 
 let post1: PostViewModel = {} as PostViewModel;
 let post2: PostViewModel = {} as PostViewModel;
+let user: UserViewModel = {} as UserViewModel;
+let jwtToken = '';
 describe('Posts', () => {
   beforeAll(async () => {
-    await getRequest().delete('/testing/all-data');
+    await getAdminAllowedRequest().delete('/testing/all-data');
   });
 
   it('Should return 200 and empty posts list with default pagination', async () => {
-    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, {
+    await getAdminAllowedRequest().get('/posts').expect(STATUS_HTTP.OK_200, {
       pageSize: 10,
       page: 1,
       pagesCount: 0,
@@ -56,13 +62,13 @@ describe('Posts', () => {
   });
 
   it('Should return 404 for not existing post', async () => {
-    await getRequest().get('/posts/-99999999999999').expect(STATUS_HTTP.NOT_FOUND_404);
+    await getAdminAllowedRequest().get('/posts/-99999999999999').expect(STATUS_HTTP.NOT_FOUND_404);
   });
 
   it('Should not be created with incorrect input data', async () => {
-    await getRequest().post('/posts').send(postIncorrectInputData).expect(STATUS_HTTP.BAD_REQUEST_400);
-    await getRequest().post('/posts').send({}).expect(STATUS_HTTP.BAD_REQUEST_400);
-    await getRequest().get('/posts').expect(STATUS_HTTP.OK_200, {
+    await getAdminAllowedRequest().post('/posts').send(postIncorrectInputData).expect(STATUS_HTTP.BAD_REQUEST_400);
+    await getAdminAllowedRequest().post('/posts').send({}).expect(STATUS_HTTP.BAD_REQUEST_400);
+    await getAdminAllowedRequest().get('/posts').expect(STATUS_HTTP.OK_200, {
       pageSize: 10,
       page: 1,
       pagesCount: 0,
@@ -74,11 +80,11 @@ describe('Posts', () => {
     const { createdBlog } = await BlogTestManager.createBlog(blogInputCorrectData);
 
     if (createdBlog) {
-      const postResponse = await getRequest().post('/posts').send(getPostCorrectInputData(createdBlog.id));
+      const postResponse = await getAdminAllowedRequest().post('/posts').send(getPostCorrectInputData(createdBlog.id));
       post1 = postResponse.body;
     }
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/posts')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -101,7 +107,7 @@ describe('Posts', () => {
       post2 = createdPost;
     }
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/posts')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -111,7 +117,7 @@ describe('Posts', () => {
         items: [post2, post1],
       });
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get(`/blogs/${createdBlog!.id}/posts`)
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -143,7 +149,7 @@ describe('Posts', () => {
 
     expect(createResponse.body).toEqual(expectedError);
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/posts')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -178,7 +184,7 @@ describe('Posts', () => {
       post2 = createdPost;
     }
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/posts')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -190,18 +196,21 @@ describe('Posts', () => {
   });
 
   it('Should not update with incorrect input data', async () => {
-    await getRequest().put(`/posts/${post1.id}`).send(postIncorrectInputData).expect(STATUS_HTTP.BAD_REQUEST_400);
+    await getAdminAllowedRequest()
+      .put(`/posts/${post1.id}`)
+      .send(postIncorrectInputData)
+      .expect(STATUS_HTTP.BAD_REQUEST_400);
   });
 
   it('Should update with correct input data', async () => {
-    await getRequest()
+    await getAdminAllowedRequest()
       .put(`/posts/${post1.id}`)
       .send(getUpdateCorrectPostData(post1.blogId))
       .expect(STATUS_HTTP.NO_CONTENT_204);
 
     post1 = { ...post1, ...getUpdateCorrectPostData(post1.blogId) };
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/posts')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -213,7 +222,7 @@ describe('Posts', () => {
   });
 
   it('GET Sorting and filtering works correct', async () => {
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/posts?sortDirection=asc')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -223,7 +232,7 @@ describe('Posts', () => {
         items: [post1, post2],
       });
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/posts?pageSize=1&pageNumber=2')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 1,
@@ -233,7 +242,7 @@ describe('Posts', () => {
         items: [post1],
       });
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/posts?pageSize=1&pageNumber=2&sortDirection=asc')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 1,
@@ -243,7 +252,7 @@ describe('Posts', () => {
         items: [post2],
       });
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get('/posts?pageSize=blabla&pageNumber=blabla&sortDirection=blabla&sortBy=unexistedName')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -255,8 +264,8 @@ describe('Posts', () => {
   });
 
   it('Delete blog with unexisted id', async () => {
-    await getRequest().delete(`/posts/-99999999999999`).expect(STATUS_HTTP.NOT_FOUND_404);
-    await getRequest()
+    await getAdminAllowedRequest().delete(`/posts/-99999999999999`).expect(STATUS_HTTP.NOT_FOUND_404);
+    await getAdminAllowedRequest()
       .get('/posts')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -268,8 +277,8 @@ describe('Posts', () => {
   });
 
   it('Delete blog with correct id', async () => {
-    await getRequest().delete(`/posts/${post1.id}`).expect(STATUS_HTTP.NO_CONTENT_204);
-    await getRequest()
+    await getAdminAllowedRequest().delete(`/posts/${post1.id}`).expect(STATUS_HTTP.NO_CONTENT_204);
+    await getAdminAllowedRequest()
       .get('/posts')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
@@ -294,7 +303,7 @@ describe('Posts', () => {
       createdPosts.push(newPost.createdPost as PostViewModel);
     }
 
-    await getRequest()
+    await getAdminAllowedRequest()
       .get(`/blogs/${createdBlog!.id}/posts`)
       .expect(STATUS_HTTP.OK_200)
       .expect((res) => {
@@ -303,5 +312,87 @@ describe('Posts', () => {
         expect(res.body.totalCount).toBe(4);
         expect(res.body.items).toEqual(expect.arrayContaining(createdPosts));
       });
+
+    post1 = createdPosts[0];
+    post2 = createdPosts[1];
+  });
+
+  it('Should not give create comment with bad data', async () => {
+    await getRequest()
+      .post(`/posts/-999999999/comments`)
+      .send({ content: 'length 20 more valid string' })
+      .expect(STATUS_HTTP.UNAUTHORIZED_401);
+
+    const { createdUser } = await UserTestManager.createUser({
+      email: 'Email@gm.com',
+      login: 'Login',
+      password: '123456789',
+    });
+
+    const { createdTokenResponse } = await AuthTestManager.login({
+      loginOrEmail: createdUser!.email,
+      password: '123456789',
+    });
+
+    user = createdUser!;
+    jwtToken = createdTokenResponse!.accessToken;
+
+    await getUserAuthorisedRequest(jwtToken)
+      .post(`/posts/${post1.id}/comments`)
+      .send({ content: '' })
+      .expect(STATUS_HTTP.BAD_REQUEST_400);
+
+    await getUserAuthorisedRequest(jwtToken)
+      .post(`/posts/-999999999/comments`)
+      .send({ content: 'length 20 more valid string' })
+      .expect(STATUS_HTTP.NOT_FOUND_404);
+
+    await getUserAuthorisedRequest(jwtToken)
+      .post(`/posts/-999999999/comments`)
+      .send({ content: 'length 19 not valid' })
+      .expect(STATUS_HTTP.BAD_REQUEST_400);
+  });
+
+  it('Should create and save comment for post', async () => {
+    const sentComments = ['What a great post! Correct length', 'Like it!! Correct length!!! Wow!!'];
+
+    const getExpectedComment = (content: string) => {
+      return {
+        id: expect.any(String),
+        content: content,
+        commentatorInfo: {
+          userId: user.id,
+          userLogin: user.login,
+        },
+        createdAt: expect.stringMatching(ISO_STRING_REGEX),
+      };
+    };
+
+    const response1 = await getUserAuthorisedRequest(jwtToken)
+      .post(`/posts/${post1.id}/comments`)
+      .send({ content: sentComments[0] })
+      .expect(STATUS_HTTP.CREATED_201);
+
+    expect(response1.body).toEqual(getExpectedComment(sentComments[0]));
+
+    const response2 = await getUserAuthorisedRequest(jwtToken)
+      .post(`/posts/${post1.id}/comments`)
+      .send({ content: sentComments[1] })
+      .expect(STATUS_HTTP.CREATED_201);
+
+    expect(response2.body).toEqual(getExpectedComment(sentComments[1]));
+
+    const getCommentsResponse = await getUserAuthorisedRequest(jwtToken)
+      .get(`/posts/${post1.id}/comments`)
+      .send({ content: sentComments[1] })
+      .expect(STATUS_HTTP.OK_200);
+
+    expect(getCommentsResponse.body).toEqual({
+      pagesCount: 1,
+      page: 1,
+      pageSize: 10,
+      totalCount: 2,
+      items: [getExpectedComment(sentComments[1]), getExpectedComment(sentComments[0])],
+    });
   });
 });
