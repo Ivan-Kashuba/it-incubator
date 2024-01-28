@@ -69,8 +69,8 @@ authRouter.post(
   '/registration-confirmation',
   confirmationByRegistrationCodeValidation,
   validationCheckMiddleware,
-  async (req: RequestWithQuery<{ code: string }>, res: Response) => {
-    const user = await usersRepository.findUserByRegistrationActivationCode(req.query.code);
+  async (req: RequestWithBody<{ code: string }>, res: Response) => {
+    const user = await usersRepository.findUserByRegistrationActivationCode(req.body.code);
     const updatedUser = await usersRepository.updateUserByLoginOrEmail(user!.accountData!.email, {
       'accountConfirmation.isConfirmed': true,
       'accountConfirmation.confirmationCode': null,

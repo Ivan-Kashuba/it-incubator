@@ -4,7 +4,7 @@ import { isBefore } from 'date-fns';
 
 const confirmationByRegistrationCodeValidationSchema: Schema = {
   code: {
-    in: 'query',
+    in: 'body',
     notEmpty: {
       errorMessage: 'Field is required',
     },
