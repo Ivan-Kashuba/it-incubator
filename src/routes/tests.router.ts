@@ -11,7 +11,7 @@ testRouter.delete('/all-data', async (req: Request, res: Response) => {
   if (isDeleted) {
     res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
   } else {
-    res.sendStatus(STATUS_HTTP.INTERNAL_ERROR_500);
+    res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
   }
 });
 

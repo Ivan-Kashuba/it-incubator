@@ -140,13 +140,13 @@ describe('Users', () => {
       });
 
     await getAdminAllowedRequest()
-      .get('/users?searchLoginTerm=Login123')
+      .get('/users?searchLoginTerm=Login123&sortDirection=asc')
       .expect(STATUS_HTTP.OK_200, {
         pageSize: 10,
         page: 1,
         pagesCount: 1,
         totalCount: 2,
-        items: [user3, user2],
+        items: [user2, user3],
       });
   });
 });

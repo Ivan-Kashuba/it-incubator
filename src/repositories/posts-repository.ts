@@ -3,7 +3,7 @@ import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsens
 import { postsCollection } from '../db/mongoDb';
 import { postWithBlogNameAggregate } from '../domain/posts/aggregations/postWithBlogNameAggregate';
 import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
-import { createPaginationResponse, getSkip, getSortValue } from '../shared/helpers/pagination';
+import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
 
 export const postsRepository = {
   async findPosts(
@@ -21,7 +21,7 @@ export const postsRepository = {
     const foundedPosts = (await postsCollection
 
       .aggregate(postWithBlogNameAggregate(filters))
-      .sort({ [sortBy]: getSortValue(sortDirection) })
+      .sort({ [sortBy]: getSortDirectionMongoValue(sortDirection) })
       .skip(getSkip(pageNumber, pageSize))
       .limit(pageSize)
       .toArray()) as PostViewModel[];

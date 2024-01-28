@@ -1,24 +1,15 @@
 import { UserDbModel, UserViewModel } from '../types/model/UsersModels';
 
 export const mapDbUsersToViewUsers = (dbUsers: UserDbModel[]) => {
-  return dbUsers.map((dbUser) => {
-    const viewUser: UserViewModel = {
-      id: dbUser.id,
-      createdAt: dbUser.createdAt,
-      email: dbUser.email,
-      login: dbUser.login,
-    };
-
-    return viewUser;
-  });
+  return dbUsers.map(mapDbUserToViewUser);
 };
 
 export const mapDbUserToViewUser = (dbUser: UserDbModel) => {
   const viewUser: UserViewModel = {
     id: dbUser.id,
-    createdAt: dbUser.createdAt,
-    email: dbUser.email,
-    login: dbUser.login,
+    createdAt: dbUser.accountData.createdAt,
+    email: dbUser.accountData.email,
+    login: dbUser.accountData.login,
   };
 
   return viewUser;

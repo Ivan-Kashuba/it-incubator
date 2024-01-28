@@ -55,7 +55,7 @@ postsRouter.post(
       return;
     }
 
-    res.sendStatus(STATUS_HTTP.INTERNAL_ERROR_500);
+    res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
   }
 );
 postsRouter.get('/:postId', async (req: RequestWithParams<{ postId: string }>, res: Response<PostViewModel>) => {
@@ -154,6 +154,6 @@ postsRouter.post(
       }
     }
 
-    res.sendStatus(STATUS_HTTP.INTERNAL_ERROR_500);
+    res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
   }
 );

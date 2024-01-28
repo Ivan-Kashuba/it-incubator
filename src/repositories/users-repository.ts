@@ -2,13 +2,13 @@ import { UserDbModel, UserViewModel } from '../domain/users/types/model/UsersMod
 import { usersCollection } from '../db/mongoDb';
 import { PaginationPayload } from '../shared/types/Pagination';
 import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsensitiveCaseSearchRegexString';
-import { createPaginationResponse, getSkip, getSortValue } from '../shared/helpers/pagination';
+import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
 import { mapDbUsersToViewUsers } from '../domain/users/mappers/userMapers';
 
 export const usersRepository = {
   async createUser(user: UserDbModel) {
     const createResponse = await usersCollection.insertOne(user);
-    return createResponse.insertedId;
+    return createResponse.insertedId ? user.id : null;
   },
 
   async findUsers(
@@ -20,11 +20,11 @@ export const usersRepository = {
     const termsArray = [];
 
     if (searchLoginTerm) {
-      termsArray.push({ login: getInsensitiveCaseSearchRegexString(searchLoginTerm) });
+      termsArray.push({ 'accountData.login': getInsensitiveCaseSearchRegexString(searchLoginTerm) });
     }
 
     if (searchEmailTerm) {
-      termsArray.push({ email: getInsensitiveCaseSearchRegexString(searchEmailTerm) });
+      termsArray.push({ 'accountData.email': getInsensitiveCaseSearchRegexString(searchEmailTerm) });
     }
 
     const filters = termsArray.length ? { $or: termsArray } : {};
@@ -33,7 +33,7 @@ export const usersRepository = {
 
     const foundedUsers = await usersCollection
       .find(filters, { projection: { _id: 0 } })
-      .sort({ [sortBy]: getSortValue(sortDirection) })
+      .sort({ [`accountData.${sortBy}`]: getSortDirectionMongoValue(sortDirection) })
       .skip(getSkip(pageNumber, pageSize))
       .limit(pagination.pageSize)
       .toArray();
@@ -47,6 +47,38 @@ export const usersRepository = {
   },
 
   async findUserByLoginOrEmail(loginOrEmail: string) {
-    return await usersCollection.findOne({ $or: [{ login: loginOrEmail }, { email: loginOrEmail }] });
+    return await usersCollection.findOne({
+      $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }],
+    });
+  },
+
+  async updateUserByLoginOrEmail(loginOrEmail: string, updateInfo: Partial<UserDbModel>) {
+    return await usersCollection.findOneAndUpdate(
+      {
+        $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }],
+      },
+      {
+        $set: {
+          ...updateInfo,
+        },
+      }
+    );
+  },
+
+  async updateUserRegistrationActivationCode(loginOrEmail: string, updateInfo: Partial<UserDbModel>) {
+    return await usersCollection.findOneAndUpdate(
+      {
+        $or: [{ 'accountConfirmation.confirmationCode': loginOrEmail }, { 'accountData.email': loginOrEmail }],
+      },
+      {
+        $set: {
+          ...updateInfo,
+        },
+      }
+    );
+  },
+
+  async findUserByRegistrationActivationCode(code: string) {
+    return await usersCollection.findOne({ 'accountConfirmation.confirmationCode': code });
   },
 };

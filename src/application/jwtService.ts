@@ -5,9 +5,13 @@ import { UserTokenInfo } from '../domain/auth/types/model/Auth';
 
 export const jwtService = {
   async createJwt(user: UserDbModel) {
-    return jwt.sign({ userId: user.id, email: user.email, login: user.login }, envConfig.JWT_SECRET_KEY, {
-      expiresIn: '1d',
-    });
+    return jwt.sign(
+      { userId: user.id, email: user.accountData.email, login: user.accountData.login },
+      envConfig.JWT_SECRET_KEY,
+      {
+        expiresIn: '1d',
+      }
+    );
   },
 
   async getUserInfoByToken(token: string) {

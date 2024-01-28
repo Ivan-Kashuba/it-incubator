@@ -28,7 +28,7 @@ usersRouter.post(
       return;
     }
 
-    res.status(STATUS_HTTP.INTERNAL_ERROR_500);
+    res.status(STATUS_HTTP.NOT_IMPLEMENTED_501);
   }
 );
 

@@ -1,7 +1,7 @@
 import { commentsCollection, usersCollection } from '../db/mongoDb';
 import { CommentDbModel, CommentViewModel } from '../domain/comments/types/model/CommentsModels';
 import { PaginationPayload } from '../shared/types/Pagination';
-import { createPaginationResponse, getSkip, getSortValue } from '../shared/helpers/pagination';
+import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
 import { mapDbCommentsToViewModel } from '../domain/comments/mappers/dbCommentToViewModel';
 
 export const commentsRepository = {
@@ -48,7 +48,7 @@ export const commentsRepository = {
 
     const dbComments = await commentsCollection
       .find({ postId: postId }, { projection: { _id: 0 } })
-      .sort({ [sortBy]: getSortValue(sortDirection) })
+      .sort({ [sortBy]: getSortDirectionMongoValue(sortDirection) })
       .skip(getSkip(pageNumber, pageSize))
       .limit(pagination.pageSize)
       .toArray();

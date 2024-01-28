@@ -20,11 +20,18 @@ export const usersService = {
 
     const userToSave: UserDbModel = {
       id: new ObjectId().toString(),
-      email,
-      login,
-      createdAt: new Date().toISOString(),
-      hash,
-      salt,
+      accountData: {
+        login,
+        email,
+        hash,
+        salt,
+        createdAt: new Date().toISOString(),
+      },
+      accountConfirmation: {
+        confirmationCode: null,
+        isConfirmed: true,
+        expirationDate: null,
+      },
     };
 
     return await usersRepository.createUser(userToSave);

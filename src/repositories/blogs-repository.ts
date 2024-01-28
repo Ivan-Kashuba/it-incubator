@@ -3,7 +3,7 @@ import { blogsCollection, postsCollection } from '../db/mongoDb';
 import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsensitiveCaseSearchRegexString';
 import { PostDbModel, PostViewModel } from '../domain/posts/types/model/PostModels';
 import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
-import { createPaginationResponse, getSkip, getSortValue } from '../shared/helpers/pagination';
+import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
 
 export const blogsRepository = {
   async findBlogs(
@@ -21,7 +21,7 @@ export const blogsRepository = {
 
     const foundedBlogs = await blogsCollection
       .find(filters, { projection: { _id: 0 } })
-      .sort({ [sortBy]: getSortValue(sortDirection) })
+      .sort({ [sortBy]: getSortDirectionMongoValue(sortDirection) })
       .skip(getSkip(pageNumber, pageSize))
       .limit(pagination.pageSize)
       .toArray();
@@ -69,7 +69,7 @@ export const blogsRepository = {
 
     const postsFromBd = await postsCollection
       .find(filter)
-      .sort({ [sortBy]: getSortValue(sortDirection) })
+      .sort({ [sortBy]: getSortDirectionMongoValue(sortDirection) })
       .skip(getSkip(pageNumber, pageSize))
       .limit(pageSize)
       .toArray();

@@ -18,7 +18,7 @@ export const getSkip = (pageNumber: number, pageSize: number) => {
   return (pageNumber - 1) * pageSize;
 };
 
-export const getSortValue = (sortValue: SortDirection) => {
+export const getSortDirectionMongoValue = (sortValue: SortDirection) => {
   if (sortValue === 'asc') {
     return 1;
   } else {

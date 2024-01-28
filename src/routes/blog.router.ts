@@ -50,7 +50,7 @@ blogRouter.post(
       return;
     }
 
-    res.sendStatus(STATUS_HTTP.INTERNAL_ERROR_500);
+    res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
   }
 );
 blogRouter.get('/:blogId', async (req: RequestWithParams<{ blogId: string }>, res: Response<BlogViewModel>) => {
