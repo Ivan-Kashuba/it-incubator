@@ -18,6 +18,8 @@ export const emailManager = {
     return { mailTransporter, defaultMailDetails };
   },
   async sendRegistrationConfirmEmail(userEmail: string, code: string) {
+    console.log('+++');
+
     const { defaultMailDetails, mailTransporter } = this._getGoogleEmailConfiguration();
 
     try {

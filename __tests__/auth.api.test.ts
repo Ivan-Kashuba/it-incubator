@@ -2,18 +2,32 @@ import { getAdminAllowedRequest, getRequest, getUserAuthorisedRequest } from './
 import { STATUS_HTTP } from '../src/shared/types/index';
 import { UserTestManager } from './util/UserTestManager';
 import { UserCreateModel, UserViewModel } from '../src/domain/users/types/model/UsersModels';
+import { ErrorResponse } from '../src/shared/types/Error';
+import { usersRepository } from '../src/repositories/users-repository';
+import { add } from 'date-fns';
+import { ISO_STRING_REGEX } from '../src/shared/helpers/regex';
+import { ObjectId } from 'mongodb';
+import { emailManager } from '../src/adapters/emailAdapter';
 
 const userCredentials1: UserCreateModel = { email: 'user1email@gm.com', login: 'User1', password: '123456789' };
-let user1: UserViewModel = {} as UserViewModel;
-let jwtTokenUser1 = '';
-
 const userCredentials2: UserCreateModel = { email: 'user2email@gm.com', login: 'User2', password: '123456789' };
-let user2: UserViewModel = {} as UserViewModel;
-let jwtTokenUser2 = '';
+
+type TExpectState = {
+  user1: UserViewModel;
+  jwtTokenUser1: string;
+
+  user2: UserViewModel;
+  jwtTokenUser2: string;
+
+  confirmationCode: string;
+};
+
+let expectedState: Partial<TExpectState> = {};
 
 describe('Auth', () => {
   beforeAll(async () => {
     await getRequest().delete('/testing/all-data');
+    jest.spyOn(emailManager, 'sendRegistrationConfirmEmail').mockReturnValue(Promise.resolve(true));
   });
 
   it('Should return 400 if bad validation', async () => {
@@ -29,8 +43,6 @@ describe('Auth', () => {
   it('Should login user by email and username', async () => {
     const { createdUser: createdUser1 } = await UserTestManager.createUser(userCredentials1);
     const { createdUser: createdUser2 } = await UserTestManager.createUser(userCredentials2);
-    user1 = createdUser1!;
-    user2 = createdUser2!;
 
     const response1 = await getRequest()
       .post('/auth/login')
@@ -61,8 +73,13 @@ describe('Auth', () => {
       accessToken: expect.any(String),
     });
 
-    jwtTokenUser1 = response2.body.accessToken;
-    jwtTokenUser2 = response3.body.accessToken;
+    expectedState = {
+      ...expectedState,
+      user1: createdUser1,
+      user2: createdUser2,
+      jwtTokenUser1: response2.body.accessToken,
+      jwtTokenUser2: response3.body.accessToken,
+    };
   });
 
   it('Should return 401 if bad credentials', async () => {
@@ -87,6 +104,8 @@ describe('Auth', () => {
   });
 
   it('Should return me user info if token valid', async () => {
+    const { jwtTokenUser1, user1, user2, jwtTokenUser2 } = expectedState as TExpectState;
+
     await getUserAuthorisedRequest(jwtTokenUser1).get('/auth/me').expect(STATUS_HTTP.OK_200, {
       userId: user1.id,
       email: userCredentials1.email,
@@ -97,6 +116,114 @@ describe('Auth', () => {
       userId: user2.id,
       email: userCredentials2.email,
       login: userCredentials2.login,
+    });
+  });
+
+  it('register user with bad credentials', async () => {
+    const expectedError: ErrorResponse = {
+      errorsMessages: [
+        { field: 'login', message: expect.any(String) },
+        { field: 'email', message: expect.any(String) },
+        { field: 'password', message: expect.any(String) },
+      ],
+    };
+
+    await getRequest()
+      .post('/auth/registration')
+      .send({ login: 'Lg', email: 'email@gm', password: 'pswrd' })
+      .expect(STATUS_HTTP.BAD_REQUEST_400)
+      .expect((res) => {
+        expect(res.body).toEqual(expectedError);
+      });
+  });
+
+  it('register user with correct credentials', async () => {
+    await getRequest()
+      .post('/auth/registration')
+      .send({ login: 'login', email: 'email1@gm.com', password: 'password123' })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    const userInDb = await usersRepository.findUserByLoginOrEmail('email1@gm.com');
+    expectedState.confirmationCode = userInDb!.accountConfirmation!.confirmationCode!;
+
+    expect(userInDb).toEqual({
+      id: expect.any(String),
+      _id: expect.any(ObjectId),
+      accountConfirmation: {
+        isConfirmed: false,
+        confirmationCode: expect.any(String),
+        expirationDate: add(userInDb!.accountData.createdAt, { hours: 24 }).toISOString(),
+      },
+      accountData: {
+        email: 'email1@gm.com',
+        createdAt: expect.stringMatching(ISO_STRING_REGEX),
+        login: 'login',
+        salt: expect.any(String),
+        hash: expect.any(String),
+      },
+    });
+  });
+  it('Resending registration email with code with errors', async () => {
+    // confirm email for user
+    await getRequest()
+      .post('/auth/registration-confirmation')
+      .send({ code: expectedState.confirmationCode })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    await getRequest()
+      .post('/auth/registration-email-resending')
+      .send({ email: 'not-existed-email@gm.com' })
+      .expect(STATUS_HTTP.BAD_REQUEST_400);
+
+    // trying to confirm already confirmed user
+    await getRequest()
+      .post('/auth/registration-email-resending')
+      .send({ email: 'email1@gm.com' })
+      .expect(STATUS_HTTP.BAD_REQUEST_400);
+  });
+
+  it('Successfully registration flow', async () => {
+    await getRequest()
+      .post('/auth/registration')
+      .send({ login: 'userLogin', email: 'user-email@gm.com', password: 'password123' })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    const initialUser = await usersRepository.findUserByLoginOrEmail('userLogin');
+
+    await getRequest()
+      .post('/auth/registration-email-resending')
+      .send({ email: 'user-email@gm.com' })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    const userWithUpdatedConfirmationCode = await usersRepository.findUserByLoginOrEmail('userLogin');
+
+    expect(initialUser!.accountConfirmation.confirmationCode).not.toBe(
+      userWithUpdatedConfirmationCode!.accountConfirmation.confirmationCode
+    );
+    expect(initialUser!.accountConfirmation.confirmationCode).toBe(initialUser!.accountConfirmation.confirmationCode);
+
+    await getRequest()
+      .post('/auth/registration-confirmation')
+      .send({ code: userWithUpdatedConfirmationCode!.accountConfirmation.confirmationCode })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    const userAfterConfirm = await usersRepository.findUserByLoginOrEmail('userLogin');
+
+    expect(userAfterConfirm).toEqual({
+      id: expect.any(String),
+      _id: expect.any(ObjectId),
+      accountConfirmation: {
+        isConfirmed: true,
+        confirmationCode: null,
+        expirationDate: null,
+      },
+      accountData: {
+        email: 'user-email@gm.com',
+        createdAt: expect.stringMatching(ISO_STRING_REGEX),
+        login: 'userLogin',
+        salt: expect.any(String),
+        hash: expect.any(String),
+      },
     });
   });
 });

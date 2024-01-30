@@ -15,3 +15,7 @@ export const getRequest = () => {
 };
 
 export type SuperTestBodyResponse<T> = Omit<Response, 'body'> & { body: T };
+
+export function getExpectState<T>() {
+  return expect.getState.bind(expect) as () => unknown as () => T;
+}

@@ -27,19 +27,21 @@ export const authService = {
     const salt = bcrypt.genSaltSync(10);
     const confirmationCode = uuidv4();
 
+    const currentDate = new Date().toISOString();
+
     const userSaveToDb: UserDbModel = {
       id: new ObjectId().toString(),
       accountData: {
         login: userInfo.login,
         email: userInfo.email,
-        createdAt: new Date().toString(),
+        createdAt: currentDate,
         salt: salt,
         hash: bcrypt.hashSync(userInfo.password, salt),
       },
       accountConfirmation: {
         isConfirmed: false,
         confirmationCode,
-        expirationDate: add(new Date(), { hours: 24 }).toISOString(),
+        expirationDate: add(currentDate, { hours: 24 }).toISOString(),
       },
     };
 
