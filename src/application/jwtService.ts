@@ -1,15 +1,14 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { envConfig } from '../shared/helpers/env-config';
-import { UserDbModel } from '../domain/users/types/model/UsersModels';
 import { UserTokenInfo } from '../domain/auth/types/model/Auth';
 
 export const jwtService = {
-  async createJwt(user: UserDbModel) {
+  async createJwt(userInfo: UserTokenInfo, expiresIn: SignOptions['expiresIn']) {
     return jwt.sign(
-      { userId: user.id, email: user.accountData.email, login: user.accountData.login },
+      { userId: userInfo.userId, email: userInfo.email, login: userInfo.login },
       envConfig.JWT_SECRET_KEY,
       {
-        expiresIn: '1d',
+        expiresIn,
       }
     );
   },

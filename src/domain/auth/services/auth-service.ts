@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { AuthModel } from '../types/model/Auth';
+import { AuthModel, UserTokenInfo } from '../types/model/Auth';
 import { usersRepository } from '../../../repositories/users-repository';
 import { jwtService } from '../../../application/jwtService';
 import { UserCreateModel, UserDbModel } from '../../users/types/model/UsersModels';
@@ -7,6 +7,7 @@ import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { emailManager } from '../../../adapters/emailAdapter';
+import { JWT_BLACK_LIST } from '../../../db/mongoDb';
 
 export const authService = {
   async loginByLoginOrEmail(credentials: AuthModel) {
@@ -20,7 +21,13 @@ export const authService = {
     )
       return null;
 
-    return await jwtService.createJwt(userByLoginOrEmail);
+    const userInfo: UserTokenInfo = {
+      userId: userByLoginOrEmail.id,
+      email: userByLoginOrEmail.accountData.email,
+      login: userByLoginOrEmail.accountData.login,
+    };
+
+    return await this.createJwtKeys(userInfo);
   },
 
   async registerUser(userInfo: UserCreateModel) {
@@ -69,6 +76,20 @@ export const authService = {
     const isMailSent = await emailManager.sendRegistrationConfirmEmail(userEmail, confirmationCode);
 
     return isMailSent && !!updatedUser;
+  },
+
+  async createJwtKeys(userInfo: UserTokenInfo) {
+    const accessToken = await jwtService.createJwt(userInfo, '6m');
+    const refreshToken = await jwtService.createJwt(userInfo, '30d');
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  },
+
+  async addRefreshJwtToBlacklist(refreshToken: string) {
+    return JWT_BLACK_LIST.push(refreshToken);
   },
 
   _generateHashAndSoleByPasswordAndSalt(password: string, salt: string | number) {

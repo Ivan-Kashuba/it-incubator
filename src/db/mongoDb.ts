@@ -14,6 +14,8 @@ export const postsCollection = dataBase.collection<PostDbModel>('posts');
 export const usersCollection = dataBase.collection<UserDbModel>('users');
 export const commentsCollection = dataBase.collection<CommentDbModel>('comments');
 
+export const JWT_BLACK_LIST: string[] = [];
+
 export async function runMongoDb() {
   try {
     await client.connect();
