@@ -148,6 +148,13 @@ authRouter.post('/logout', async (req: Request, res: Response) => {
     return;
   }
 
+  const userInfo = await jwtService.getUserInfoByToken(refreshTokenFromCookie);
+
+  if (!userInfo) {
+    res.sendStatus(STATUS_HTTP.UNAUTHORIZED_401);
+    return;
+  }
+
   const isAddedToBlackList = await authService.addRefreshJwtToBlacklist(refreshTokenFromCookie);
 
   if (isAddedToBlackList) {
