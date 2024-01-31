@@ -139,3 +139,21 @@ authRouter.post('/refresh-token', async (req: Request, res: Response) => {
     accessToken,
   });
 });
+
+authRouter.post('/logout', async (req: Request, res: Response) => {
+  const refreshTokenFromCookie = req.cookies.refreshToken;
+
+  if (!refreshTokenFromCookie || JWT_BLACK_LIST.includes(refreshTokenFromCookie)) {
+    res.sendStatus(STATUS_HTTP.UNAUTHORIZED_401);
+    return;
+  }
+
+  const isAddedToBlackList = await authService.addRefreshJwtToBlacklist(refreshTokenFromCookie);
+
+  if (isAddedToBlackList) {
+    res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
+    return;
+  }
+
+  res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
+});

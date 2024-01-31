@@ -79,8 +79,8 @@ export const authService = {
   },
 
   async createJwtKeys(userInfo: UserTokenInfo) {
-    const accessToken = await jwtService.createJwt(userInfo, '6m');
-    const refreshToken = await jwtService.createJwt(userInfo, '30d');
+    const accessToken = await jwtService.createJwt(userInfo, '10s');
+    const refreshToken = await jwtService.createJwt(userInfo, '20s');
 
     return {
       accessToken,
@@ -89,7 +89,8 @@ export const authService = {
   },
 
   async addRefreshJwtToBlacklist(refreshToken: string) {
-    return JWT_BLACK_LIST.push(refreshToken);
+    JWT_BLACK_LIST.push(refreshToken);
+    return true;
   },
 
   _generateHashAndSoleByPasswordAndSalt(password: string, salt: string | number) {
