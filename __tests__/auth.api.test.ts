@@ -8,6 +8,9 @@ import { add } from 'date-fns';
 import { ISO_STRING_REGEX } from '../src/shared/helpers/regex';
 import { ObjectId } from 'mongodb';
 import { emailManager } from '../src/adapters/emailAdapter';
+import { AuthTestManager } from './util/AuthTestManager';
+import { JWT_BLACK_LIST } from '../src/db/mongoDb';
+import { delay } from './util/delay';
 
 const userCredentials1: UserCreateModel = { email: 'user1email@gm.com', login: 'User1', password: '123456789' };
 const userCredentials2: UserCreateModel = { email: 'user2email@gm.com', login: 'User2', password: '123456789' };
@@ -225,5 +228,42 @@ describe('Auth', () => {
         hash: expect.any(String),
       },
     });
+  });
+  it('Logout & refresh token flow', async () => {
+    const { accessToken, refreshToken } = await AuthTestManager.createUserAndLogin({
+      email: 'Email1@gm.com',
+      login: 'Login1',
+      password: '12345678',
+    });
+
+    await getRequest().post('/auth/logout').expect(STATUS_HTTP.UNAUTHORIZED_401);
+    await getUserAuthorisedRequest(accessToken).post('/auth/logout').expect(STATUS_HTTP.UNAUTHORIZED_401);
+    await getUserAuthorisedRequest(accessToken, refreshToken!).post('/auth/logout').expect(STATUS_HTTP.NO_CONTENT_204);
+    await getUserAuthorisedRequest(accessToken, refreshToken!)
+      .post('/auth/refresh-token')
+      .expect(STATUS_HTTP.UNAUTHORIZED_401);
+    await getUserAuthorisedRequest(accessToken, refreshToken!)
+      .post('/auth/logout')
+      .expect(STATUS_HTTP.UNAUTHORIZED_401);
+
+    await delay(2000);
+
+    const { createdTokenResponse, refreshToken: refreshToken1 } = await AuthTestManager.login({
+      loginOrEmail: 'Email1@gm.com',
+      password: '12345678',
+    });
+
+    await delay(2000);
+    const response1 = await getUserAuthorisedRequest(createdTokenResponse!.accessToken, refreshToken1!)
+      .post('/auth/refresh-token')
+      .expect(STATUS_HTTP.OK_200);
+
+    await getUserAuthorisedRequest(createdTokenResponse!.accessToken, refreshToken1!)
+      .post('/auth/logout')
+      .expect(STATUS_HTTP.UNAUTHORIZED_401);
+
+    await getUserAuthorisedRequest(response1.body.accessToken, AuthTestManager.getRefreshTokenByResponse(response1)!)
+      .post('/auth/logout')
+      .expect(STATUS_HTTP.NO_CONTENT_204);
   });
 });

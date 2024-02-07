@@ -6,8 +6,8 @@ export const getAdminAllowedRequest = () => {
   return agent(app).set('Authorization', allowedBasicHeader);
 };
 
-export const getUserAuthorisedRequest = (token: string) => {
-  return agent(app).set('Authorization', `Bearer ${token}`);
+export const getUserAuthorisedRequest = (token: string, refreshToken?: string) => {
+  return agent(app).set('Authorization', `Bearer ${token}`).set('Cookie', `refreshToken=${refreshToken}`);
 };
 
 export const getRequest = () => {

@@ -65,19 +65,6 @@ export const usersRepository = {
     );
   },
 
-  async updateUserRegistrationActivationCode(loginOrEmail: string, updateInfo: Partial<UserDbModel>) {
-    return await usersCollection.findOneAndUpdate(
-      {
-        $or: [{ 'accountConfirmation.confirmationCode': loginOrEmail }, { 'accountData.email': loginOrEmail }],
-      },
-      {
-        $set: {
-          ...updateInfo,
-        },
-      }
-    );
-  },
-
   async findUserByRegistrationActivationCode(code: string) {
     return await usersCollection.findOne({ 'accountConfirmation.confirmationCode': code });
   },

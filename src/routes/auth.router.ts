@@ -25,7 +25,7 @@ authRouter.post(
     const tokens = await authService.loginByLoginOrEmail(req.body);
 
     if (tokens?.accessToken && tokens?.refreshToken) {
-      refreshTokenFromCookie && (await authService.addRefreshJwtToBlacklist(req.cookies.refreshToken));
+      refreshTokenFromCookie && (await authService.addRefreshJwtToBlacklist(refreshTokenFromCookie));
 
       res
         .status(STATUS_HTTP.OK_200)

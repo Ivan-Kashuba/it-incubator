@@ -30,8 +30,12 @@ describe('Comments', () => {
   });
 
   it('Preparing for next tests', async () => {
-    const { token: token1, createdUser: user1 } = await AuthTestManager.createUserAndLogin(defaultUsersInputData[0]);
-    const { token: token2, createdUser: user2 } = await AuthTestManager.createUserAndLogin(defaultUsersInputData[1]);
+    const { accessToken: token1, createdUser: user1 } = await AuthTestManager.createUserAndLogin(
+      defaultUsersInputData[0]
+    );
+    const { accessToken: token2, createdUser: user2 } = await AuthTestManager.createUserAndLogin(
+      defaultUsersInputData[1]
+    );
 
     const { createdBlog: blog1 } = await BlogTestManager.createBlog({
       name: 'Blog1',
