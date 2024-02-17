@@ -98,8 +98,8 @@ export const authService = {
   },
 
   async createJwtKeys(userInfo: UserTokenInfo) {
-    const accessToken = await jwtService.createJwt(userInfo, '10s');
-    const refreshToken = await jwtService.createJwt(userInfo, '20s');
+    const accessToken = await jwtService.createJwt(userInfo, '6m');
+    const refreshToken = await jwtService.createJwt(userInfo, '30d');
 
     return {
       accessToken,
