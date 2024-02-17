@@ -7,10 +7,13 @@ import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { emailManager } from '../../../adapters/emailAdapter';
-import { JWT_BLACK_LIST } from '../../../db/mongoDb';
+
+import { authRepository } from '../../../repositories/auth-repository';
+import { Details } from 'express-useragent';
+import { Result, RESULT_CODES, ResultService } from '../../../shared/helpers/resultObject';
 
 export const authService = {
-  async loginByLoginOrEmail(credentials: AuthModel) {
+  async loginByLoginOrEmail(credentials: AuthModel, userDeviceName: string, userIp: string) {
     const userByLoginOrEmail = await usersRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
 
     if (!userByLoginOrEmail) return null;
@@ -21,13 +24,29 @@ export const authService = {
     )
       return null;
 
+    const deviceId = new ObjectId().toString();
+
     const userInfo: UserTokenInfo = {
       userId: userByLoginOrEmail.id,
       email: userByLoginOrEmail.accountData.email,
       login: userByLoginOrEmail.accountData.login,
+      deviceId: deviceId,
     };
 
-    return await this.createJwtKeys(userInfo);
+    const { refreshToken, accessToken } = await this.createJwtKeys(userInfo);
+
+    const expirationTokenDate = await jwtService.getJwtExpirationDate(refreshToken);
+
+    await authRepository.addUserSession({
+      _id: new ObjectId().toString(),
+      userId: userByLoginOrEmail.id,
+      ip: userIp,
+      title: userDeviceName,
+      deviceId: deviceId,
+      lastActiveDate: expirationTokenDate!,
+    });
+
+    return { refreshToken, accessToken };
   },
 
   async registerUser(userInfo: UserCreateModel) {
@@ -88,9 +107,62 @@ export const authService = {
     };
   },
 
-  async addRefreshJwtToBlacklist(refreshToken: string) {
-    JWT_BLACK_LIST.push(refreshToken);
-    return true;
+  getDeviceNameByUseragent(userAgent?: Details) {
+    const platformPart = userAgent?.platform ? userAgent?.platform + ', ' : '';
+    const browserPart = userAgent?.browser || '';
+
+    return platformPart + browserPart;
+  },
+
+  async getUserSessionByIdAndRefreshToken(userId: string, refreshToken: string) {
+    const usersSessions = await authRepository.getUserSessionsList(userId);
+
+    const user = await jwtService.getUserInfoByToken(refreshToken);
+    const refreshTokenExpirationDate = await jwtService.getJwtExpirationDate(refreshToken);
+
+    if (!refreshTokenExpirationDate) return null;
+
+    const session = usersSessions?.find((us) => {
+      return us?.deviceId === user?.deviceId && refreshTokenExpirationDate === us.lastActiveDate;
+    });
+
+    if (!session) return null;
+
+    return session;
+  },
+
+  async updateUserDeviceSession(sessionId: string, refreshToken: string) {
+    const expirationTokenDate = await jwtService.getJwtExpirationDate(refreshToken);
+
+    return await authRepository.updateUserDeviceSession(sessionId, {
+      lastActiveDate: expirationTokenDate!,
+    });
+  },
+
+  async removeAllButCurrentUserSession(userId: string, currentSessionId: string) {
+    return await authRepository.removeAllButCurrentUserSession(userId, currentSessionId);
+  },
+
+  async removeSessionByDeviceAndUsersIds(deviceId: string, userId: string): Promise<Result<void>> {
+    const sessionToRemove = await authRepository.getSessionByDeviceId(deviceId);
+
+    if (!sessionToRemove) {
+      return ResultService.createResult(RESULT_CODES.Not_found);
+    }
+
+    const isSessionBelongToUser = sessionToRemove.userId === userId;
+
+    if (!isSessionBelongToUser) {
+      return ResultService.createResult(RESULT_CODES.Forbidden, 'User is not allowed to delete this session');
+    }
+
+    const isDeleted = await authRepository.removeUserSession(sessionToRemove._id);
+
+    if (isDeleted) {
+      return ResultService.createResult(RESULT_CODES.Success_no_content);
+    }
+
+    return ResultService.createResult(RESULT_CODES.Db_problem);
   },
 
   _generateHashAndSoleByPasswordAndSalt(password: string, salt: string | number) {

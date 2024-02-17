@@ -12,7 +12,8 @@ import { UserCreateModel } from '../domain/users/types/model/UsersModels';
 import { resendEmailForRegistrationConfirmationValidation } from '../domain/auth/validation/resendEmailForRegistrationConfirmationValidation';
 import { confirmationByRegistrationCodeValidation } from '../domain/auth/validation/confirmationByRegistrationCodeValidation';
 import { usersRepository } from '../repositories/users-repository';
-import { JWT_BLACK_LIST } from '../db/mongoDb';
+import { authRepository } from '../repositories/auth-repository';
+import { securityQueryRepository } from '../repositories/security-query-repository';
 
 export const authRouter = express.Router();
 
@@ -21,12 +22,12 @@ authRouter.post(
   authModelValidation,
   validationCheckMiddleware,
   async (req: RequestWithBody<AuthModel>, res: Response) => {
-    const refreshTokenFromCookie = req.cookies.refreshToken;
-    const tokens = await authService.loginByLoginOrEmail(req.body);
+    const userDeviceName = authService.getDeviceNameByUseragent(req.useragent);
+    const userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+    const tokens = await authService.loginByLoginOrEmail(req.body, userDeviceName, userIp as string);
 
     if (tokens?.accessToken && tokens?.refreshToken) {
-      refreshTokenFromCookie && (await authService.addRefreshJwtToBlacklist(refreshTokenFromCookie));
-
       res
         .status(STATUS_HTTP.OK_200)
         .cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true })
@@ -104,7 +105,11 @@ authRouter.get('/me', userAuthCheckMiddleware, async (req: Request, res: Respons
   const userInfo = await jwtService.getUserInfoByToken(token);
 
   if (userInfo) {
-    res.status(STATUS_HTTP.OK_200).send(userInfo);
+    res.status(STATUS_HTTP.OK_200).send({
+      email: userInfo.email,
+      login: userInfo.login,
+      userId: userInfo.userId,
+    });
     return;
   }
 
@@ -119,45 +124,46 @@ authRouter.post('/refresh-token', async (req: Request, res: Response) => {
     return;
   }
 
-  if (JWT_BLACK_LIST.includes(refreshTokenFromCookie)) {
+  const user = await jwtService.getUserInfoByToken(refreshTokenFromCookie);
+
+  if (!user) {
     res.sendStatus(STATUS_HTTP.UNAUTHORIZED_401);
     return;
   }
 
-  const userInfo = await jwtService.getUserInfoByToken(refreshTokenFromCookie);
+  const session = await authService.getUserSessionByIdAndRefreshToken(user.userId, refreshTokenFromCookie);
 
-  if (!userInfo) {
+  if (!session) {
     res.sendStatus(STATUS_HTTP.UNAUTHORIZED_401);
     return;
   }
 
-  await authService.addRefreshJwtToBlacklist(refreshTokenFromCookie);
-
-  const { accessToken, refreshToken } = await authService.createJwtKeys(userInfo);
+  const { accessToken, refreshToken } = await authService.createJwtKeys(user);
+  await authService.updateUserDeviceSession(session._id, refreshToken);
 
   res.status(STATUS_HTTP.OK_200).cookie('refreshToken', refreshToken, { httpOnly: true, secure: true }).send({
     accessToken,
   });
 });
 
-authRouter.post('/logout', async (req: Request, res: Response) => {
+authRouter.post('/logout', userAuthCheckMiddleware, async (req: Request, res: Response) => {
   const refreshTokenFromCookie = req.cookies.refreshToken;
 
-  if (!refreshTokenFromCookie || JWT_BLACK_LIST.includes(refreshTokenFromCookie)) {
+  if (!refreshTokenFromCookie) {
     res.sendStatus(STATUS_HTTP.UNAUTHORIZED_401);
     return;
   }
 
-  const userInfo = await jwtService.getUserInfoByToken(refreshTokenFromCookie);
+  const validSession = await authService.getUserSessionByIdAndRefreshToken(req.user.userId, refreshTokenFromCookie);
 
-  if (!userInfo) {
+  if (!validSession) {
     res.sendStatus(STATUS_HTTP.UNAUTHORIZED_401);
     return;
   }
 
-  const isAddedToBlackList = await authService.addRefreshJwtToBlacklist(refreshTokenFromCookie);
+  const isSessionRemoved = await authRepository.removeUserSession(validSession._id);
 
-  if (isAddedToBlackList) {
+  if (isSessionRemoved) {
     res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
     return;
   }

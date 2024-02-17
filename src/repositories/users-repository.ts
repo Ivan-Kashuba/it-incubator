@@ -1,5 +1,5 @@
 import { UserDbModel, UserViewModel } from '../domain/users/types/model/UsersModels';
-import { usersCollection } from '../db/mongoDb';
+import { sessionsCollection, usersCollection } from '../db/mongoDb';
 import { PaginationPayload } from '../shared/types/Pagination';
 import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsensitiveCaseSearchRegexString';
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';

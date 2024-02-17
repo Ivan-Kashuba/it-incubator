@@ -9,8 +9,8 @@ import { ISO_STRING_REGEX } from '../src/shared/helpers/regex';
 import { ObjectId } from 'mongodb';
 import { emailManager } from '../src/adapters/emailAdapter';
 import { AuthTestManager } from './util/AuthTestManager';
-import { JWT_BLACK_LIST } from '../src/db/mongoDb';
 import { delay } from './util/delay';
+import exp = require('constants');
 
 const userCredentials1: UserCreateModel = { email: 'user1email@gm.com', login: 'User1', password: '123456789' };
 const userCredentials2: UserCreateModel = { email: 'user2email@gm.com', login: 'User2', password: '123456789' };
@@ -246,14 +246,14 @@ describe('Auth', () => {
       .post('/auth/logout')
       .expect(STATUS_HTTP.UNAUTHORIZED_401);
 
-    await delay(2000);
+    await delay(1000);
 
     const { createdTokenResponse, refreshToken: refreshToken1 } = await AuthTestManager.login({
       loginOrEmail: 'Email1@gm.com',
       password: '12345678',
     });
 
-    await delay(2000);
+    await delay(1000);
     const response1 = await getUserAuthorisedRequest(createdTokenResponse!.accessToken, refreshToken1!)
       .post('/auth/refresh-token')
       .expect(STATUS_HTTP.OK_200);

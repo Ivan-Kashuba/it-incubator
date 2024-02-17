@@ -5,6 +5,7 @@ import { BlogViewModel } from '../domain/blogs/types/model/BlogModels';
 import { PostDbModel } from '../domain/posts/types/model/PostModels';
 import { UserDbModel } from '../domain/users/types/model/UsersModels';
 import { CommentDbModel } from '../domain/comments/types/model/CommentsModels';
+import { DeviceSessionDTO } from '../domain/auth/types/model/Auth';
 
 const client = new MongoClient(envConfig.MONGO_URI);
 export const dataBase = client.db(envConfig.DB_NAME);
@@ -13,8 +14,7 @@ export const blogsCollection = dataBase.collection<BlogViewModel>('blogs');
 export const postsCollection = dataBase.collection<PostDbModel>('posts');
 export const usersCollection = dataBase.collection<UserDbModel>('users');
 export const commentsCollection = dataBase.collection<CommentDbModel>('comments');
-
-export const JWT_BLACK_LIST: string[] = [];
+export const sessionsCollection = dataBase.collection<DeviceSessionDTO>('sessions');
 
 export async function runMongoDb() {
   try {

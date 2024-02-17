@@ -1,11 +1,17 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { envConfig } from '../shared/helpers/env-config';
 import { UserTokenInfo } from '../domain/auth/types/model/Auth';
+import { MILLI_SECONDS_IN_SECOND } from '../shared/constants';
 
 export const jwtService = {
   async createJwt(userInfo: UserTokenInfo, expiresIn: SignOptions['expiresIn']) {
     return jwt.sign(
-      { userId: userInfo.userId, email: userInfo.email, login: userInfo.login },
+      {
+        userId: userInfo.userId,
+        email: userInfo.email,
+        login: userInfo.login,
+        deviceId: userInfo.deviceId,
+      } as UserTokenInfo,
       envConfig.JWT_SECRET_KEY,
       {
         expiresIn,
@@ -15,11 +21,26 @@ export const jwtService = {
 
   async getUserInfoByToken(token: string) {
     try {
-      const result: any = jwt.verify(token, envConfig.JWT_SECRET_KEY);
+      const result = jwt.verify(token, envConfig.JWT_SECRET_KEY) as UserTokenInfo;
 
-      return { userId: result.userId, email: result.email, login: result.login } as UserTokenInfo;
+      return {
+        userId: result.userId,
+        email: result.email,
+        login: result.login,
+        deviceId: result.deviceId,
+      } as UserTokenInfo;
     } catch (err) {
       return null;
     }
+  },
+
+  async getJwtExpirationDate(token: string) {
+    const payload: any = jwt.decode(token);
+
+    if (!payload) {
+      return null;
+    }
+
+    return new Date(payload.exp * MILLI_SECONDS_IN_SECOND).toISOString();
   },
 };
