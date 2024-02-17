@@ -13,15 +13,16 @@ import { resendEmailForRegistrationConfirmationValidation } from '../domain/auth
 import { confirmationByRegistrationCodeValidation } from '../domain/auth/validation/confirmationByRegistrationCodeValidation';
 import { usersRepository } from '../repositories/users-repository';
 import { authRepository } from '../repositories/auth-repository';
-import { rateLimiter } from '../middlewares/rateLimit';
+import { setRateLimit } from '../middlewares/rateLimit';
 
 export const authRouter = express.Router();
 
 authRouter.post(
   '/login',
+  setRateLimit(),
   authModelValidation,
   validationCheckMiddleware,
-  rateLimiter,
+
   async (req: RequestWithBody<AuthModel>, res: Response) => {
     const userDeviceName = authService.getDeviceNameByUseragent(req.useragent);
     const userIp = req.ip;
@@ -44,9 +45,9 @@ authRouter.post(
 
 authRouter.post(
   '/registration',
+  setRateLimit(),
   inputUserValidation,
   validationCheckMiddleware,
-  rateLimiter,
   async (req: RequestWithBody<UserCreateModel>, res: Response) => {
     const createdUserId = await authService.registerUser(req.body);
 
@@ -61,9 +62,9 @@ authRouter.post(
 
 authRouter.post(
   '/registration-email-resending',
+  setRateLimit(),
   resendEmailForRegistrationConfirmationValidation,
   validationCheckMiddleware,
-  rateLimiter,
   async (req: RequestWithBody<{ email: string }>, res: Response) => {
     const isCodeResent = await authService.resendRegistrationCode(req.body.email);
 
@@ -78,9 +79,9 @@ authRouter.post(
 
 authRouter.post(
   '/registration-confirmation',
+  setRateLimit(),
   confirmationByRegistrationCodeValidation,
   validationCheckMiddleware,
-  rateLimiter,
   async (req: RequestWithBody<{ code: string }>, res: Response) => {
     const user = await usersRepository.findUserByRegistrationActivationCode(req.body.code);
     const updatedUser = await usersRepository.updateUserByLoginOrEmail(user!.accountData!.email, {
