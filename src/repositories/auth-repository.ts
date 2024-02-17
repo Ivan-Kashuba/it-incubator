@@ -8,10 +8,6 @@ export const authRepository = {
     return !!insertedId;
   },
 
-  async getSessionById(sessionId: string) {
-    return await sessionsCollection.findOne({ _id: sessionId });
-  },
-
   async getSessionByDeviceId(deviceId: string) {
     return await sessionsCollection.findOne({ deviceId });
   },

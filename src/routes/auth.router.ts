@@ -151,7 +151,7 @@ authRouter.post('/refresh-token', async (req: Request, res: Response) => {
   });
 });
 
-authRouter.post('/logout', userAuthCheckMiddleware, async (req: Request, res: Response) => {
+authRouter.post('/logout', async (req: Request, res: Response) => {
   const refreshTokenFromCookie = req.cookies.refreshToken;
 
   if (!refreshTokenFromCookie) {
@@ -159,7 +159,14 @@ authRouter.post('/logout', userAuthCheckMiddleware, async (req: Request, res: Re
     return;
   }
 
-  const validSession = await authService.getUserSessionByIdAndRefreshToken(req.user.userId, refreshTokenFromCookie);
+  const user = await jwtService.getUserInfoByToken(refreshTokenFromCookie);
+
+  if (!user) {
+    res.sendStatus(STATUS_HTTP.UNAUTHORIZED_401);
+    return;
+  }
+
+  const validSession = await authService.getUserSessionByIdAndRefreshToken(user.userId, refreshTokenFromCookie);
 
   if (!validSession) {
     res.sendStatus(STATUS_HTTP.UNAUTHORIZED_401);
