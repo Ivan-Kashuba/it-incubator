@@ -193,19 +193,28 @@ export const authService = {
     const user = await usersRepository.findUserByPasswordRecoveryCode(code);
 
     if (!user) {
-      return ResultService.createResult(RESULT_CODES.Bad_request, 'User with current confirmation code is not found');
+      return ResultService.createResult(
+        RESULT_CODES.Bad_request,
+        ResultService.createError('recoveryCode', 'User with current recovery code is not found')
+      );
     }
 
     const expirationDate = user.passwordRecovery.expirationDate;
 
     if (!expirationDate) {
-      return ResultService.createResult(RESULT_CODES.Bad_request, 'No expiration date in user');
+      return ResultService.createResult(
+        RESULT_CODES.Db_problem,
+        ResultService.createError('expirationDate', 'No expiration date in user')
+      );
     }
 
     const isCodeExpired = isBefore(expirationDate, new Date());
 
     if (isCodeExpired) {
-      return ResultService.createResult(RESULT_CODES.Bad_request, 'Code is expired');
+      return ResultService.createResult(
+        RESULT_CODES.Bad_request,
+        ResultService.createError('recoveryCode', 'Code is expired')
+      );
     }
 
     const salt = jwtService.createSalt(10);

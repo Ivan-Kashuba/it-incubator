@@ -178,6 +178,10 @@ describe('Auth', () => {
         salt: expect.any(String),
         hash: expect.any(String),
       },
+      passwordRecovery: {
+        confirmationCode: null,
+        expirationDate: null,
+      },
       __v: 0,
     });
   });
@@ -241,6 +245,10 @@ describe('Auth', () => {
         login: 'userLogin',
         salt: expect.any(String),
         hash: expect.any(String),
+      },
+      passwordRecovery: {
+        confirmationCode: null,
+        expirationDate: null,
       },
       __v: 0,
     });

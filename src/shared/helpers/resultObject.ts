@@ -22,7 +22,7 @@ const RESULT_CODES_TO_HTTP: Record<RESULT_CODES, STATUS_HTTP> = {
 export type Result<T> = {
   resultCode: RESULT_CODES;
   data?: T;
-  errorMessage?: string;
+  errorMessage?: string | ErrorResponse;
 };
 
 type ResultToHttpResponse<T> = {
@@ -31,8 +31,12 @@ type ResultToHttpResponse<T> = {
 };
 
 export const ResultService = {
-  createResult<T>(resultCode: RESULT_CODES, errorMessage?: string, data?: T): Result<T> {
+  createResult<T>(resultCode: RESULT_CODES, errorMessage?: string | ErrorResponse, data?: T): Result<T> {
     return { data, errorMessage, resultCode };
+  },
+
+  createError(fieldName: string, errorText: string): ErrorResponse {
+    return { errorsMessages: [{ field: fieldName, message: errorText }] };
   },
 
   mapResultToHttpResponse(result: Result<any>): ResultToHttpResponse<any> {

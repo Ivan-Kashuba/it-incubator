@@ -41,7 +41,7 @@ export const emailManager = {
         ...defaultMailDetails,
         to: userEmail,
         subject: 'Password recovery',
-        html: `<div>Hey! This email has been sent from Blog to recover your password<br/><br/><a href="https://some-front.com/password-recovery?code=${code}">Click here to recover your password</a></div>`,
+        html: `<div>Hey! This email has been sent from Blog to recover your password<br/><br/><a href="https://some-front.com/password-recovery?recoveryCode=${code}">Click here to recover your password</a></div>`,
       });
       return true;
     } catch (err) {
