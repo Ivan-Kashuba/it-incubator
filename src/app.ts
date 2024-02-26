@@ -9,10 +9,8 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import useragent from 'express-useragent';
 import { securityRouter } from './routes/security.router';
-import { rateLimiter } from './middlewares/rateLimit';
 
 export const app = express();
-app.set('trust proxy', true);
 const jsonBodyMiddleware = express.json();
 app.use(cors());
 app.use(jsonBodyMiddleware);

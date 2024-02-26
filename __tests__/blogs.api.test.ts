@@ -3,6 +3,8 @@ import { getAdminAllowedRequest } from './util/shared';
 import { BlogTestManager } from './util/BlogTestManager';
 import { ErrorResponse } from '../src/shared/types/Error';
 import { BlogInputModel, BlogViewModel } from '../src/domain/blogs/types/model/BlogModels';
+import mongoose from 'mongoose';
+import { envConfig } from '../src/shared/helpers/env-config';
 
 const blogInputCorrectData: BlogInputModel = {
   name: 'New blog',
@@ -23,7 +25,12 @@ let blog3: BlogViewModel = {} as BlogViewModel;
 
 describe('Blogs', () => {
   beforeAll(async () => {
+    await mongoose.connect(envConfig.MONGO_URI, { dbName: envConfig.DB_NAME });
     await getAdminAllowedRequest().delete('/testing/all-data');
+  });
+
+  afterAll(async () => {
+    await mongoose.connection.close();
   });
 
   it('Should return 200 and empty blogs list', async () => {

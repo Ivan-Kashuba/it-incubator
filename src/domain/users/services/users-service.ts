@@ -32,6 +32,10 @@ export const usersService = {
         isConfirmed: true,
         expirationDate: null,
       },
+      passwordRecovery: {
+        confirmationCode: null,
+        expirationDate: null,
+      },
     };
 
     return await usersRepository.createUser(userToSave);

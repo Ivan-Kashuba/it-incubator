@@ -1,9 +1,9 @@
 import { PostDbModel, PostViewModel } from '../domain/posts/types/model/PostModels';
 import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsensitiveCaseSearchRegexString';
-import { postsCollection } from '../db/mongoDb';
 import { postWithBlogNameAggregate } from '../domain/posts/aggregations/postWithBlogNameAggregate';
 import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
+import { PostModel } from '../db/schemes/posts';
 
 export const postsRepository = {
   async findPosts(
@@ -17,30 +17,28 @@ export const postsRepository = {
     if (title) {
       filters = { title: getInsensitiveCaseSearchRegexString(title) };
     }
-    const totalCount = await postsCollection.countDocuments(filters);
-    const foundedPosts = (await postsCollection
+    const totalCount = await PostModel.countDocuments(filters);
 
-      .aggregate(postWithBlogNameAggregate(filters))
+    const foundedPosts = (await PostModel.aggregate(postWithBlogNameAggregate(filters))
       .sort({ [sortBy]: getSortDirectionMongoValue(sortDirection) })
       .skip(getSkip(pageNumber, pageSize))
-      .limit(pageSize)
-      .toArray()) as PostViewModel[];
+      .limit(pageSize)) as PostViewModel[];
 
     return createPaginationResponse<PostViewModel>(pagination, foundedPosts, totalCount);
   },
 
   async findPostById(postId: string) {
-    return (await postsCollection.aggregate(postWithBlogNameAggregate({ id: postId })).next()) as PostViewModel;
+    return (await PostModel.aggregate(postWithBlogNameAggregate({ id: postId })))[0] as unknown as PostViewModel;
   },
 
   async createPost(postToCreate: PostDbModel) {
-    const insertedResponse = await postsCollection.insertOne(postToCreate);
+    const insertedResponse = await PostModel.create(postToCreate);
 
-    return !!insertedResponse.insertedId;
+    return !!insertedResponse._id;
   },
 
   async updatePost(postId: string, updateInfo: Omit<PostDbModel, 'id' | 'createdAt'>) {
-    const updatedPost = await postsCollection.findOneAndUpdate(
+    const updatedPost = await PostModel.findOneAndUpdate(
       { id: postId },
       { $set: updateInfo },
       { returnDocument: 'after' }
@@ -50,7 +48,7 @@ export const postsRepository = {
   },
 
   async deletePost(postId: string) {
-    const deleteResult = await postsCollection.deleteOne({ id: postId });
+    const deleteResult = await PostModel.deleteOne({ id: postId });
 
     return deleteResult.deletedCount === 1;
   },

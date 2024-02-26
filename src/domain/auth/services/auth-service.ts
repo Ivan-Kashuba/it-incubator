@@ -1,10 +1,9 @@
-import bcrypt from 'bcrypt';
 import { AuthModel, UserTokenInfo } from '../types/model/Auth';
 import { usersRepository } from '../../../repositories/users-repository';
 import { jwtService } from '../../../application/jwtService';
 import { UserCreateModel, UserDbModel } from '../../users/types/model/UsersModels';
 import { ObjectId } from 'mongodb';
-import { add } from 'date-fns';
+import { add, isBefore } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { emailManager } from '../../../adapters/emailAdapter';
 
@@ -17,9 +16,9 @@ export const authService = {
     const userByLoginOrEmail = await usersRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
 
     if (!userByLoginOrEmail) return null;
-    if (!userByLoginOrEmail.accountConfirmation.isConfirmed) return null;
+    if (!userByLoginOrEmail?.accountConfirmation?.isConfirmed) return null;
     if (
-      this._generateHashAndSoleByPasswordAndSalt(credentials.password, userByLoginOrEmail?.accountData.salt) !==
+      jwtService.createHash(credentials.password, userByLoginOrEmail?.accountData.salt) !==
       userByLoginOrEmail.accountData.hash
     )
       return null;
@@ -50,7 +49,7 @@ export const authService = {
   },
 
   async registerUser(userInfo: UserCreateModel) {
-    const salt = bcrypt.genSaltSync(10);
+    const salt = jwtService.createSalt(10);
     const confirmationCode = uuidv4();
 
     const currentDate = new Date().toISOString();
@@ -62,12 +61,16 @@ export const authService = {
         email: userInfo.email,
         createdAt: currentDate,
         salt: salt,
-        hash: bcrypt.hashSync(userInfo.password, salt),
+        hash: jwtService.createHash(userInfo.password, salt),
       },
       accountConfirmation: {
         isConfirmed: false,
         confirmationCode,
         expirationDate: add(currentDate, { hours: 24 }).toISOString(),
+      },
+      passwordRecovery: {
+        expirationDate: null,
+        confirmationCode: null,
       },
     };
 
@@ -91,7 +94,7 @@ export const authService = {
       },
     };
 
-    const updatedUser = usersRepository.updateUserByLoginOrEmail(userEmail, updateInfo);
+    const updatedUser = await usersRepository.updateUserByLoginOrEmail(userEmail, updateInfo);
     const isMailSent = await emailManager.sendRegistrationConfirmEmail(userEmail, confirmationCode);
 
     return isMailSent && !!updatedUser;
@@ -165,7 +168,64 @@ export const authService = {
     return ResultService.createResult(RESULT_CODES.Db_problem);
   },
 
-  _generateHashAndSoleByPasswordAndSalt(password: string, salt: string | number) {
-    return bcrypt.hashSync(password, salt);
+  async recoveryPassword(email: string) {
+    const confirmationCode = uuidv4();
+
+    const user = await usersRepository.findUserByLoginOrEmail(email);
+
+    if (!user) {
+      return true;
+    }
+
+    const isEmailSent = await emailManager.sendPasswordRecoveryEmail(email, confirmationCode);
+
+    const isUserInDbUpdated = await usersRepository.updateUserByLoginOrEmail(email, {
+      passwordRecovery: {
+        confirmationCode,
+        expirationDate: add(new Date(), { hours: 24 }).toISOString(),
+      },
+    });
+
+    return !!isUserInDbUpdated && isEmailSent;
+  },
+
+  async setNewPasswordForUserByCode(code: string, newPassword: string): Promise<Result<boolean>> {
+    const user = await usersRepository.findUserByPasswordRecoveryCode(code);
+
+    if (!user) {
+      return ResultService.createResult(RESULT_CODES.Bad_request, 'User with current confirmation code is not found');
+    }
+
+    const expirationDate = user.passwordRecovery.expirationDate;
+
+    if (!expirationDate) {
+      return ResultService.createResult(RESULT_CODES.Bad_request, 'No expiration date in user');
+    }
+
+    const isCodeExpired = isBefore(expirationDate, new Date());
+
+    if (isCodeExpired) {
+      return ResultService.createResult(RESULT_CODES.Bad_request, 'Code is expired');
+    }
+
+    const salt = jwtService.createSalt(10);
+
+    const isUserInDbUpdated = await usersRepository.updateUserByLoginOrEmail(user.accountData.login, {
+      accountData: {
+        ...user.accountData,
+        salt: salt,
+        hash: jwtService.createHash(newPassword, salt),
+      },
+      passwordRecovery: {
+        confirmationCode: null,
+        expirationDate: null,
+      },
+    });
+
+    if (!isUserInDbUpdated) {
+      return ResultService.createResult(RESULT_CODES.Db_problem, undefined, true);
+    }
+
+    return ResultService.createResult(RESULT_CODES.Success_no_content, undefined, true);
   },
 };

@@ -3,17 +3,20 @@ import { RequestWithBody, STATUS_HTTP } from '../shared/types';
 
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
 import { jwtService } from '../application/jwtService';
-import { AuthModel } from '../domain/auth/types/model/Auth';
+import { AuthModel, PasswordRecoveryInputModel } from '../domain/auth/types/model/Auth';
 import { authService } from '../domain/auth/services/auth-service';
 import { authModelValidation } from '../domain/auth/validation/authModelValidation';
 import { userAuthCheckMiddleware } from '../middlewares/userAuthCheckMiddleware';
 import { inputUserValidation } from '../domain/users/validation/inputUserValidation';
 import { UserCreateModel } from '../domain/users/types/model/UsersModels';
-import { resendEmailForRegistrationConfirmationValidation } from '../domain/auth/validation/resendEmailForRegistrationConfirmationValidation';
 import { confirmationByRegistrationCodeValidation } from '../domain/auth/validation/confirmationByRegistrationCodeValidation';
 import { usersRepository } from '../repositories/users-repository';
 import { authRepository } from '../repositories/auth-repository';
 import { setRateLimit } from '../middlewares/rateLimit';
+import { passwordRecoveryValidation } from '../domain/auth/validation/passwordRecoveryValidation';
+import { resendEmailForRegistrationConfirmationValidation } from '../domain/auth/validation/resendEmailForRegistrationConfirmationValidation';
+import { changePasswordValidation } from '../domain/auth/validation/changePasswordValidation';
+import { RESULT_CODES, ResultService } from '../shared/helpers/resultObject';
 
 export const authRouter = express.Router();
 
@@ -28,7 +31,6 @@ authRouter.post(
     const userIp = req.ip;
 
     const tokens = await authService.loginByLoginOrEmail(req.body, userDeviceName, userIp as string);
-
     if (tokens?.accessToken && tokens?.refreshToken) {
       res
         .status(STATUS_HTTP.OK_200)
@@ -182,3 +184,41 @@ authRouter.post('/logout', async (req: Request, res: Response) => {
 
   res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
 });
+
+authRouter.post(
+  '/password-recovery',
+  setRateLimit(),
+  passwordRecoveryValidation,
+  validationCheckMiddleware,
+  async (req: RequestWithBody<{ email: string }>, res: Response) => {
+    try {
+      const isPasswordRecovered = await authService.recoveryPassword(req.body.email);
+
+      if (isPasswordRecovered) {
+        res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
+        return;
+      }
+    } catch {
+      res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
+    }
+  }
+);
+
+authRouter.post(
+  '/new-password',
+  setRateLimit(),
+  changePasswordValidation,
+  validationCheckMiddleware,
+  async (req: RequestWithBody<PasswordRecoveryInputModel>, res: Response) => {
+    try {
+      const { newPassword, recoveryCode } = req.body;
+      const serviceResult = await authService.setNewPasswordForUserByCode(recoveryCode, newPassword);
+
+      const result = ResultService.mapResultToHttpResponse(serviceResult);
+
+      res.status(result.statusCode).send(result.body);
+    } catch {
+      res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
+    }
+  }
+);

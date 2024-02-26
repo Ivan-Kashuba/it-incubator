@@ -1,5 +1,5 @@
 import { STATUS_HTTP } from '../../src/shared/types';
-import { getAdminAllowedRequest, getRequest, SuperTestBodyResponse } from './shared';
+import { getRequest, SuperTestBodyResponse } from './shared';
 import { AuthModel } from '../../src/domain/auth/types/model/Auth';
 import { UserCreateModel } from '../../src/domain/users/types/model/UsersModels';
 import { UserTestManager } from './UserTestManager';

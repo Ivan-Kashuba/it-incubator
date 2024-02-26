@@ -3,6 +3,8 @@ import { getAdminAllowedRequest } from './util/shared';
 import { UserTestManager } from './util/UserTestManager';
 import { ErrorResponse } from '../src/shared/types/Error';
 import { UserViewModel } from '../src/domain/users/types/model/UsersModels';
+import mongoose from 'mongoose';
+import { envConfig } from '../src/shared/helpers/env-config';
 
 let user1: UserViewModel = {} as UserViewModel;
 let user2: UserViewModel = {} as UserViewModel;
@@ -10,7 +12,12 @@ let user3: UserViewModel = {} as UserViewModel;
 
 describe('Users', () => {
   beforeAll(async () => {
+    await mongoose.connect(envConfig.MONGO_URI, { dbName: envConfig.DB_NAME });
     await getAdminAllowedRequest().delete('/testing/all-data');
+  });
+
+  afterAll(async () => {
+    await mongoose.connection.close();
   });
 
   it('Should return 200 and empty blogs list', async () => {

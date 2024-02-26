@@ -1,33 +1,33 @@
 import { DeviceSessionDTO } from '../domain/auth/types/model/Auth';
-import { sessionsCollection } from '../db/mongoDb';
+import { SessionModel } from '../db/schemes/sessions';
 
 export const authRepository = {
   async addUserSession(userSession: DeviceSessionDTO) {
-    const { insertedId } = await sessionsCollection.insertOne(userSession);
+    const { _id } = await SessionModel.create(userSession);
 
-    return !!insertedId;
+    return !!_id;
   },
 
   async getSessionByDeviceId(deviceId: string) {
-    return await sessionsCollection.findOne({ deviceId });
+    return SessionModel.findOne({ deviceId });
   },
 
   async getUserSessionsList(userId: string) {
-    return await sessionsCollection.find({ userId }).toArray();
+    return SessionModel.find({ userId });
   },
 
   async removeUserSession(sessionId: string) {
-    const { deletedCount } = await sessionsCollection.deleteOne({ _id: sessionId });
+    const { deletedCount } = await SessionModel.deleteOne({ _id: sessionId });
 
     return deletedCount === 1;
   },
 
   async updateUserDeviceSession(sessionId: string, sessionToUpdate: Partial<DeviceSessionDTO>) {
-    return await sessionsCollection.findOneAndUpdate({ _id: sessionId }, { $set: sessionToUpdate });
+    return SessionModel.findOneAndUpdate({ _id: sessionId }, { $set: sessionToUpdate });
   },
 
   async removeAllButCurrentUserSession(userId: string, currentSessionId: string) {
-    const deleteResult = await sessionsCollection.deleteMany({ userId: userId, _id: { $ne: currentSessionId } });
+    const deleteResult = await SessionModel.deleteMany({ userId: userId, _id: { $ne: currentSessionId } });
     return deleteResult.acknowledged;
   },
 };

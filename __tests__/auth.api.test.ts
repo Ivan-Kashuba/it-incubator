@@ -10,7 +10,8 @@ import { ObjectId } from 'mongodb';
 import { emailManager } from '../src/adapters/emailAdapter';
 import { AuthTestManager } from './util/AuthTestManager';
 import { delay } from './util/delay';
-import exp = require('constants');
+import mongoose from 'mongoose';
+import { envConfig } from '../src/shared/helpers/env-config';
 
 const userCredentials1: UserCreateModel = { email: 'user1email@gm.com', login: 'User1', password: '123456789' };
 const userCredentials2: UserCreateModel = { email: 'user2email@gm.com', login: 'User2', password: '123456789' };
@@ -29,8 +30,13 @@ let expectedState: Partial<TExpectState> = {};
 
 describe('Auth', () => {
   beforeAll(async () => {
-    await getRequest().delete('/testing/all-data');
+    await mongoose.connect(envConfig.MONGO_URI, { dbName: envConfig.DB_NAME });
+    await getAdminAllowedRequest().delete('/testing/all-data');
     jest.spyOn(emailManager, 'sendRegistrationConfirmEmail').mockReturnValue(Promise.resolve(true));
+  });
+
+  afterAll(async () => {
+    await mongoose.connection.close();
   });
 
   it('Should return 400 if bad validation', async () => {
@@ -97,6 +103,13 @@ describe('Auth', () => {
     await getAdminAllowedRequest()
       .post('/auth/login')
       .send({ loginOrEmail: userCredentials1.email, password: userCredentials1.password + 1 })
+      .expect(STATUS_HTTP.TOO_MANY_REQUESTS_429);
+
+    await delay(10000);
+
+    await getAdminAllowedRequest()
+      .post('/auth/login')
+      .send({ loginOrEmail: userCredentials1.email, password: userCredentials1.password + 1 })
       .expect(STATUS_HTTP.UNAUTHORIZED_401);
   });
 
@@ -147,6 +160,7 @@ describe('Auth', () => {
       .expect(STATUS_HTTP.NO_CONTENT_204);
 
     const userInDb = await usersRepository.findUserByLoginOrEmail('email1@gm.com');
+
     expectedState.confirmationCode = userInDb!.accountConfirmation!.confirmationCode!;
 
     expect(userInDb).toEqual({
@@ -164,6 +178,7 @@ describe('Auth', () => {
         salt: expect.any(String),
         hash: expect.any(String),
       },
+      __v: 0,
     });
   });
   it('Resending registration email with code with errors', async () => {
@@ -227,6 +242,7 @@ describe('Auth', () => {
         salt: expect.any(String),
         hash: expect.any(String),
       },
+      __v: 0,
     });
   });
   it('Logout & refresh token flow', async () => {

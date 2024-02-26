@@ -10,6 +10,8 @@ import { UserTestManager } from './util/UserTestManager';
 import { AuthTestManager } from './util/AuthTestManager';
 import { ISO_STRING_REGEX } from '../src/shared/helpers/regex';
 import { UserViewModel } from '../src/domain/users/types/model/UsersModels';
+import mongoose from 'mongoose';
+import { envConfig } from '../src/shared/helpers/env-config';
 
 const blogInputCorrectData: BlogInputModel = {
   name: 'New blog',
@@ -48,7 +50,12 @@ let user: UserViewModel = {} as UserViewModel;
 let jwtToken = '';
 describe('Posts', () => {
   beforeAll(async () => {
+    await mongoose.connect(envConfig.MONGO_URI, { dbName: envConfig.DB_NAME });
     await getAdminAllowedRequest().delete('/testing/all-data');
+  });
+
+  afterAll(async () => {
+    await mongoose.connection.close();
   });
 
   it('Should return 200 and empty posts list with default pagination', async () => {

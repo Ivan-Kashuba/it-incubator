@@ -1,4 +1,6 @@
-export const postWithBlogNameAggregate = (match?: Record<string, any>) => {
+import { FilterQuery, PipelineStage } from 'mongoose';
+
+export const postWithBlogNameAggregate = (match?: any): PipelineStage[] => {
   return [
     { $match: match },
     {

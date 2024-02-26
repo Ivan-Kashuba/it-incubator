@@ -1,9 +1,10 @@
 import { BlogViewModel } from '../domain/blogs/types/model/BlogModels';
-import { blogsCollection, postsCollection } from '../db/mongoDb';
 import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsensitiveCaseSearchRegexString';
 import { PostDbModel, PostViewModel } from '../domain/posts/types/model/PostModels';
 import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
+import { BlogModel } from '../db/schemes/blogs';
+import { PostModel } from '../db/schemes/posts';
 
 export const blogsRepository = {
   async findBlogs(
@@ -17,30 +18,29 @@ export const blogsRepository = {
       filters = { name: getInsensitiveCaseSearchRegexString(blogName) };
     }
 
-    const totalCount = await blogsCollection.countDocuments(filters);
+    const totalCount = await BlogModel.countDocuments(filters);
 
-    const foundedBlogs = await blogsCollection
-      .find(filters, { projection: { _id: 0 } })
+    const foundedBlogs = await BlogModel.find(filters)
+      .select('-_id -__v')
       .sort({ [sortBy]: getSortDirectionMongoValue(sortDirection) })
       .skip(getSkip(pageNumber, pageSize))
-      .limit(pagination.pageSize)
-      .toArray();
+      .limit(pagination.pageSize);
 
     return createPaginationResponse<BlogViewModel>(pagination, foundedBlogs, totalCount);
   },
 
   async findBlogById(blogId: string) {
-    return blogsCollection.findOne({ id: blogId }, { projection: { _id: 0 } });
+    return BlogModel.findOne({ id: blogId }).select('-_id -__v');
   },
 
   async createBlog(blogToCreate: BlogViewModel) {
-    const createdBlogResult = await blogsCollection.insertOne(blogToCreate);
+    const createdBlogResult = await BlogModel.create(blogToCreate);
 
-    return !!createdBlogResult.insertedId;
+    return !!createdBlogResult._id;
   },
 
   async updateBlog(blogId: string, updateInfo: Omit<BlogViewModel, 'isMembership' | 'createdAt'>) {
-    const updatedBlogResponse = await blogsCollection.findOneAndUpdate(
+    const updatedBlogResponse = await BlogModel.findOneAndUpdate(
       { id: blogId },
       { $set: updateInfo },
       { returnDocument: 'after' }
@@ -50,14 +50,14 @@ export const blogsRepository = {
   },
 
   async deleteBlog(blogId: string) {
-    const deleteResult = await blogsCollection.deleteMany({ id: blogId });
+    const deleteResult = await BlogModel.deleteMany({ id: blogId });
     return deleteResult.deletedCount === 1;
   },
 
   async createPostForBlog(post: PostDbModel) {
-    const creatingResponse = await postsCollection.insertOne(post);
+    const creatingResponse = await PostModel.create(post);
 
-    return !!creatingResponse.insertedId;
+    return !!creatingResponse._id;
   },
 
   async getPostsByBlogId(blog: BlogViewModel, pagination: PaginationPayload<PostViewModel>) {
@@ -65,14 +65,12 @@ export const blogsRepository = {
 
     const filter = { blogId: blog.id };
 
-    const totalCount = await postsCollection.countDocuments(filter);
+    const totalCount = await PostModel.countDocuments(filter);
 
-    const postsFromBd = await postsCollection
-      .find(filter)
+    const postsFromBd = await PostModel.find(filter)
       .sort({ [sortBy]: getSortDirectionMongoValue(sortDirection) })
       .skip(getSkip(pageNumber, pageSize))
-      .limit(pageSize)
-      .toArray();
+      .limit(pageSize);
 
     const viewPosts: PostViewModel[] = postsFromBd.map((post) => {
       return {

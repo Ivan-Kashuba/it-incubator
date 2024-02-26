@@ -13,6 +13,10 @@ export type UserDbModel = {
     expirationDate: string | null;
     isConfirmed: boolean;
   };
+  passwordRecovery: {
+    confirmationCode: string | null;
+    expirationDate: string | null;
+  };
 };
 
 export type UserViewModel = {

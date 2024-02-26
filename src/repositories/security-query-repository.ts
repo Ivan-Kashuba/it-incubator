@@ -1,9 +1,9 @@
 import { DeviceSessionDTO, DeviceSessionViewModel } from '../domain/auth/types/model/Auth';
-import { sessionsCollection } from '../db/mongoDb';
+import { SessionModel } from '../db/schemes/sessions';
 
 export const securityQueryRepository = {
   async getUserSessionsListById(userId: string) {
-    const dbUserSessions = await sessionsCollection.find({ userId }).toArray();
+    const dbUserSessions = await SessionModel.find({ userId });
 
     return dbUserSessions.map(this._mapDbSessionsToView);
   },

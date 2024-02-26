@@ -2,6 +2,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import { envConfig } from '../shared/helpers/env-config';
 import { UserTokenInfo } from '../domain/auth/types/model/Auth';
 import { MILLI_SECONDS_IN_SECOND } from '../shared/constants';
+import bcrypt from 'bcrypt';
 
 export const jwtService = {
   async createJwt(userInfo: UserTokenInfo, expiresIn: SignOptions['expiresIn']) {
@@ -42,5 +43,13 @@ export const jwtService = {
     }
 
     return new Date(payload.exp * MILLI_SECONDS_IN_SECOND).toISOString();
+  },
+
+  createSalt(rounds: number) {
+    return bcrypt.genSaltSync(rounds);
+  },
+
+  createHash(data: string, salt: string) {
+    return bcrypt.hashSync(data, salt);
   },
 };

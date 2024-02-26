@@ -1,4 +1,4 @@
-import { getRequest, getUserAuthorisedRequest } from './util/shared';
+import { getAdminAllowedRequest, getRequest, getUserAuthorisedRequest } from './util/shared';
 
 import { BlogTestManager } from './util/BlogTestManager';
 import { defaultUsersInputData } from './util/UserTestManager';
@@ -9,6 +9,8 @@ import { PostViewModel } from '../src/domain/posts/types/model/PostModels';
 import { STATUS_HTTP } from '../src/shared/types/index';
 import { UserViewModel } from '../src/domain/users/types/model/UsersModels';
 import { ISO_STRING_REGEX } from '../src/shared/helpers/regex';
+import mongoose from 'mongoose';
+import { envConfig } from '../src/shared/helpers/env-config';
 
 const Symbols300Text =
   'Text 301 symbol Some text text Some text text Some text text Some text textSome text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text textt';
@@ -26,7 +28,12 @@ let startInfo: TStartInfo = {} as TStartInfo;
 
 describe('Comments', () => {
   beforeAll(async () => {
-    await getRequest().delete('/testing/all-data');
+    await mongoose.connect(envConfig.MONGO_URI, { dbName: envConfig.DB_NAME });
+    await getAdminAllowedRequest().delete('/testing/all-data');
+  });
+
+  afterAll(async () => {
+    await mongoose.connection.close();
   });
 
   it('Preparing for next tests', async () => {

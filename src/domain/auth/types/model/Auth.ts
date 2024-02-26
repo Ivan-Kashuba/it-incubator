@@ -24,3 +24,8 @@ export interface DeviceSessionViewModel {
   lastActiveDate: string;
   deviceId: string;
 }
+
+export interface PasswordRecoveryInputModel {
+  recoveryCode: string;
+  newPassword: string;
+}
