@@ -2,17 +2,17 @@ import { PostDbModel, PostInputModel, PostViewModel } from '../types/model/PostM
 import { PaginationPayload, WithPagination } from '../../../shared/types/Pagination';
 import { postsRepository } from '../../../repositories/posts-repository';
 
-export const postsService = {
+export class PostsService {
   async findPosts(
     title: string | null,
     pagination: PaginationPayload<PostViewModel>
   ): Promise<WithPagination<PostViewModel>> {
     return await postsRepository.findPosts(title, pagination);
-  },
+  }
 
   async findPostById(postId: string) {
     return await postsRepository.findPostById(postId);
-  },
+  }
 
   async createPost(postInfo: PostInputModel) {
     const { content, shortDescription, title, blogId } = postInfo;
@@ -31,7 +31,7 @@ export const postsService = {
     const isPostCreated = await postsRepository.createPost(newPost);
 
     return isPostCreated ? newPost?.id : undefined;
-  },
+  }
 
   async updatePost(postId: string, postInfo: PostInputModel) {
     const { content, shortDescription, title, blogId } = postInfo;
@@ -46,9 +46,11 @@ export const postsService = {
     const isUpdated = await postsRepository.updatePost(postId, updateInfo);
 
     return isUpdated;
-  },
+  }
 
   async deletePost(postId: string) {
     return await postsRepository.deletePost(postId);
-  },
-};
+  }
+}
+
+export const postsService = new PostsService();

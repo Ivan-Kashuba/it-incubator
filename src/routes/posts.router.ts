@@ -25,12 +25,11 @@ import { mapDbCommentToViewModel } from '../domain/comments/mappers/dbCommentToV
 
 export const postsRouter = express.Router();
 
-postsRouter.get(
-  '/',
-  async (
+class PostsController {
+  async getPosts(
     req: RequestWithQuery<{ title?: string } & Partial<PaginationPayload<PostViewModel>>>,
     res: Response<WithPagination<PostViewModel>>
-  ) => {
+  ) {
     const pagination: PaginationPayload<PostViewModel> = validatePayloadPagination(req.query, 'createdAt');
 
     const titleToFind = req?.query?.title || null;
@@ -39,14 +38,8 @@ postsRouter.get(
 
     res.status(STATUS_HTTP.OK_200).send(foundedPost);
   }
-);
 
-postsRouter.post(
-  '/',
-  adminAuthCheckMiddleware,
-  postInputModelValidation,
-  validationCheckMiddleware,
-  async (req: RequestWithBody<PostInputModel>, res: Response<PostViewModel>) => {
+  async createPost(req: RequestWithBody<PostInputModel>, res: Response<PostViewModel>) {
     const createdPostId = await postsService.createPost(req.body);
 
     if (createdPostId) {
@@ -57,22 +50,20 @@ postsRouter.post(
 
     res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
   }
-);
-postsRouter.get('/:postId', async (req: RequestWithParams<{ postId: string }>, res: Response<PostViewModel>) => {
-  const postId = req.params.postId;
 
-  const foundedPost = await postsService.findPostById(postId);
+  async getPost(req: RequestWithParams<{ postId: string }>, res: Response<PostViewModel>) {
+    const postId = req.params.postId;
 
-  if (!foundedPost) {
-    res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
-  } else {
-    res.status(STATUS_HTTP.OK_200).send(foundedPost);
+    const foundedPost = await postsService.findPostById(postId);
+
+    if (!foundedPost) {
+      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
+    } else {
+      res.status(STATUS_HTTP.OK_200).send(foundedPost);
+    }
   }
-});
-postsRouter.delete(
-  '/:postId',
-  adminAuthCheckMiddleware,
-  async (req: RequestWithParams<{ postId: string }>, res: Response<void>) => {
+
+  async deletePost(req: RequestWithParams<{ postId: string }>, res: Response<void>) {
     const postId = req.params.postId;
 
     const isVideoDeleted = await postsService.deletePost(postId);
@@ -84,13 +75,8 @@ postsRouter.delete(
       res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
     }
   }
-);
-postsRouter.put(
-  '/:postId',
-  adminAuthCheckMiddleware,
-  postInputModelValidation,
-  validationCheckMiddleware,
-  async (req: RequestWithParamsAndBody<{ postId: string }, PostInputModel>, res: Response<PostViewModel>) => {
+
+  async updatePost(req: RequestWithParamsAndBody<{ postId: string }, PostInputModel>, res: Response<PostViewModel>) {
     const postId = req.params.postId;
 
     const updatedPost = await postsService.updatePost(postId, req.body);
@@ -102,14 +88,11 @@ postsRouter.put(
 
     res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
   }
-);
 
-postsRouter.get(
-  '/:postId/comments',
-  async (
+  async getPostComments(
     req: RequestWithParamsAndQuery<{ postId: string }, Partial<PaginationPayload<CommentViewModel>>>,
     res: Response<WithPagination<CommentViewModel>>
-  ) => {
+  ) {
     const postId = req.params.postId;
 
     const pagination: PaginationPayload<CommentViewModel> = validatePayloadPagination(req.query, 'createdAt');
@@ -125,14 +108,11 @@ postsRouter.get(
 
     res.status(STATUS_HTTP.OK_200).send(comments);
   }
-);
 
-postsRouter.post(
-  '/:postId/comments',
-  userAuthCheckMiddleware,
-  postCommentModelValidation,
-  validationCheckMiddleware,
-  async (req: RequestWithParamsAndBody<{ postId: string }, CommentInputModel>, res: Response<CommentViewModel>) => {
+  async createPostComment(
+    req: RequestWithParamsAndBody<{ postId: string }, CommentInputModel>,
+    res: Response<CommentViewModel>
+  ) {
     const postId = req.params.postId;
     const content = req.body.content;
 
@@ -156,4 +136,34 @@ postsRouter.post(
 
     res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
   }
+}
+
+const postsController = new PostsController();
+postsRouter.get('/', postsController.getPosts);
+
+postsRouter.post(
+  '/',
+  adminAuthCheckMiddleware,
+  postInputModelValidation,
+  validationCheckMiddleware,
+  postsController.createPost
+);
+postsRouter.get('/:postId', postsController.getPost);
+postsRouter.delete('/:postId', adminAuthCheckMiddleware, postsController.deletePost);
+postsRouter.put(
+  '/:postId',
+  adminAuthCheckMiddleware,
+  postInputModelValidation,
+  validationCheckMiddleware,
+  postsController.updatePost
+);
+
+postsRouter.get('/:postId/comments', postsController.getPostComments);
+
+postsRouter.post(
+  '/:postId/comments',
+  userAuthCheckMiddleware,
+  postCommentModelValidation,
+  validationCheckMiddleware,
+  postsController.createPostComment
 );

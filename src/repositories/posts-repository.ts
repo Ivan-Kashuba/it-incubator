@@ -5,7 +5,7 @@ import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
 import { PostModel } from '../db/schemes/posts';
 
-export const postsRepository = {
+export class PostsRepository {
   async findPosts(
     title: string | null,
     pagination: PaginationPayload<PostViewModel>
@@ -25,17 +25,17 @@ export const postsRepository = {
       .limit(pageSize)) as PostViewModel[];
 
     return createPaginationResponse<PostViewModel>(pagination, foundedPosts, totalCount);
-  },
+  }
 
   async findPostById(postId: string) {
     return (await PostModel.aggregate(postWithBlogNameAggregate({ id: postId })))[0] as unknown as PostViewModel;
-  },
+  }
 
   async createPost(postToCreate: PostDbModel) {
     const insertedResponse = await PostModel.create(postToCreate);
 
     return !!insertedResponse._id;
-  },
+  }
 
   async updatePost(postId: string, updateInfo: Omit<PostDbModel, 'id' | 'createdAt'>) {
     const updatedPost = await PostModel.findOneAndUpdate(
@@ -45,11 +45,13 @@ export const postsRepository = {
     );
 
     return !!updatedPost;
-  },
+  }
 
   async deletePost(postId: string) {
     const deleteResult = await PostModel.deleteOne({ id: postId });
 
     return deleteResult.deletedCount === 1;
-  },
-};
+  }
+}
+
+export const postsRepository = new PostsRepository();

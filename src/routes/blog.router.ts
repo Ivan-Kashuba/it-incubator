@@ -21,12 +21,11 @@ import { postsRepository } from '../repositories/posts-repository';
 
 export const blogRouter = express.Router();
 
-blogRouter.get(
-  '/',
-  async (
+class BlogsController {
+  async getBlogs(
     req: RequestWithQuery<{ searchNameTerm?: string | null } & Partial<PaginationPayload<BlogViewModel>>>,
     res: Response<WithPagination<BlogViewModel>>
-  ) => {
+  ) {
     const nameToFind = req?.query?.searchNameTerm || null;
     const pagination: PaginationPayload<BlogViewModel> = validatePayloadPagination(req.query, 'createdAt');
 
@@ -34,13 +33,8 @@ blogRouter.get(
 
     res.status(STATUS_HTTP.OK_200).send(foundedBlogs);
   }
-);
-blogRouter.post(
-  '/',
-  adminAuthCheckMiddleware,
-  blogInputModelValidation,
-  validationCheckMiddleware,
-  async (req: RequestWithBody<BlogInputModel>, res: Response<BlogViewModel>) => {
+
+  async createBlog(req: RequestWithBody<BlogInputModel>, res: Response<BlogViewModel>) {
     const createdBlogId = await blogsService.createBlog(req.body);
 
     const createdBlog = await blogsRepository.findBlogById(createdBlogId);
@@ -52,23 +46,21 @@ blogRouter.post(
 
     res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
   }
-);
-blogRouter.get('/:blogId', async (req: RequestWithParams<{ blogId: string }>, res: Response<BlogViewModel>) => {
-  const blogId = req.params.blogId;
 
-  const foundedBlog = await blogsService.findBlogById(blogId);
+  async getBlog(req: RequestWithParams<{ blogId: string }>, res: Response<BlogViewModel>) {
+    const blogId = req.params.blogId;
 
-  if (!foundedBlog) {
-    res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
-    return;
+    const foundedBlog = await blogsService.findBlogById(blogId);
+
+    if (!foundedBlog) {
+      res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
+      return;
+    }
+
+    res.status(STATUS_HTTP.OK_200).send(foundedBlog);
   }
 
-  res.status(STATUS_HTTP.OK_200).send(foundedBlog);
-});
-blogRouter.delete(
-  '/:blogId',
-  adminAuthCheckMiddleware,
-  async (req: RequestWithParams<{ blogId: string }>, res: Response<void>) => {
+  async deleteBlog(req: RequestWithParams<{ blogId: string }>, res: Response<void>) {
     const blogId = req.params.blogId;
 
     const isVideoDeleted = await blogsService.deleteBlog(blogId);
@@ -80,13 +72,8 @@ blogRouter.delete(
       res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
     }
   }
-);
-blogRouter.put(
-  '/:blogId',
-  adminAuthCheckMiddleware,
-  blogInputModelValidation,
-  validationCheckMiddleware,
-  async (req: RequestWithParamsAndBody<{ blogId: string }, BlogInputModel>, res: Response<BlogViewModel>) => {
+
+  async updateBlog(req: RequestWithParamsAndBody<{ blogId: string }, BlogInputModel>, res: Response<BlogViewModel>) {
     const blogId = req.params.blogId;
 
     const isBlogUpdated = await blogsService.updateBlog(blogId, req.body);
@@ -98,14 +85,11 @@ blogRouter.put(
 
     res.sendStatus(STATUS_HTTP.NO_CONTENT_204);
   }
-);
 
-blogRouter.post(
-  '/:blogId/posts',
-  adminAuthCheckMiddleware,
-  blogPostInputModelValidation,
-  validationCheckMiddleware,
-  async (req: RequestWithParamsAndBody<{ blogId: string }, BlogPostInputModel>, res: Response<PostViewModel>) => {
+  async createPostForBlog(
+    req: RequestWithParamsAndBody<{ blogId: string }, BlogPostInputModel>,
+    res: Response<PostViewModel>
+  ) {
     const blogId = req.params.blogId;
 
     const createdPostId = await blogsService.createPostForBlog(blogId, req.body);
@@ -117,14 +101,11 @@ blogRouter.post(
       res.sendStatus(404);
     }
   }
-);
 
-blogRouter.get(
-  '/:blogId/posts',
-  async (
+  async getBlogPosts(
     req: RequestWithParamsAndQuery<{ blogId: string }, Partial<PaginationPayload<PostViewModel>>>,
     res: Response<WithPagination<PostViewModel>>
-  ) => {
+  ) {
     const blogId = req.params.blogId;
     const pagination: PaginationPayload<PostViewModel> = validatePayloadPagination(req.query, 'createdAt');
 
@@ -136,4 +117,34 @@ blogRouter.get(
       res.sendStatus(404);
     }
   }
+}
+
+const blogsController = new BlogsController();
+
+blogRouter.get('/', blogsController.getBlogs);
+blogRouter.post(
+  '/',
+  adminAuthCheckMiddleware,
+  blogInputModelValidation,
+  validationCheckMiddleware,
+  blogsController.createBlog
 );
+blogRouter.get('/:blogId', blogsController.getBlog);
+blogRouter.delete('/:blogId', adminAuthCheckMiddleware, blogsController.deleteBlog);
+blogRouter.put(
+  '/:blogId',
+  adminAuthCheckMiddleware,
+  blogInputModelValidation,
+  validationCheckMiddleware,
+  blogsController.updateBlog
+);
+
+blogRouter.post(
+  '/:blogId/posts',
+  adminAuthCheckMiddleware,
+  blogPostInputModelValidation,
+  validationCheckMiddleware,
+  blogsController.createPostForBlog
+);
+
+blogRouter.get('/:blogId/posts', blogsController.getBlogPosts);

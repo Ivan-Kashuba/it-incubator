@@ -11,7 +11,7 @@ import { authRepository } from '../../../repositories/auth-repository';
 import { Details } from 'express-useragent';
 import { Result, RESULT_CODES, ResultService } from '../../../shared/helpers/resultObject';
 
-export const authService = {
+export class AuthService {
   async loginByLoginOrEmail(credentials: AuthModel, userDeviceName: string, userIp: string) {
     const userByLoginOrEmail = await usersRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
 
@@ -46,7 +46,7 @@ export const authService = {
     });
 
     return { refreshToken, accessToken };
-  },
+  }
 
   async registerUser(userInfo: UserCreateModel) {
     const salt = jwtService.createSalt(10);
@@ -81,7 +81,7 @@ export const authService = {
     } else {
       return null;
     }
-  },
+  }
 
   async resendRegistrationCode(userEmail: string) {
     const confirmationCode = uuidv4();
@@ -98,7 +98,7 @@ export const authService = {
     const isMailSent = await emailManager.sendRegistrationConfirmEmail(userEmail, confirmationCode);
 
     return isMailSent && !!updatedUser;
-  },
+  }
 
   async createJwtKeys(userInfo: UserTokenInfo) {
     const accessToken = await jwtService.createJwt(userInfo, '6m');
@@ -108,14 +108,14 @@ export const authService = {
       accessToken,
       refreshToken,
     };
-  },
+  }
 
   getDeviceNameByUseragent(userAgent?: Details) {
     const platformPart = userAgent?.platform ? userAgent?.platform + ', ' : '';
     const browserPart = userAgent?.browser || '';
 
     return platformPart + browserPart;
-  },
+  }
 
   async getUserSessionByIdAndRefreshToken(userId: string, refreshToken: string) {
     const usersSessions = await authRepository.getUserSessionsList(userId);
@@ -132,7 +132,7 @@ export const authService = {
     if (!session) return null;
 
     return session;
-  },
+  }
 
   async updateUserDeviceSession(sessionId: string, refreshToken: string) {
     const expirationTokenDate = await jwtService.getJwtExpirationDate(refreshToken);
@@ -140,11 +140,11 @@ export const authService = {
     return await authRepository.updateUserDeviceSession(sessionId, {
       lastActiveDate: expirationTokenDate!,
     });
-  },
+  }
 
   async removeAllButCurrentUserSession(userId: string, currentSessionId: string) {
     return await authRepository.removeAllButCurrentUserSession(userId, currentSessionId);
-  },
+  }
 
   async removeSessionByDeviceAndUsersIds(deviceId: string, userId: string): Promise<Result<void>> {
     const sessionToRemove = await authRepository.getSessionByDeviceId(deviceId);
@@ -166,7 +166,7 @@ export const authService = {
     }
 
     return ResultService.createResult(RESULT_CODES.Db_problem);
-  },
+  }
 
   async recoveryPassword(email: string) {
     const confirmationCode = uuidv4();
@@ -187,7 +187,7 @@ export const authService = {
     });
 
     return !!isUserInDbUpdated && isEmailSent;
-  },
+  }
 
   async setNewPasswordForUserByCode(code: string, newPassword: string): Promise<Result<boolean>> {
     const user = await usersRepository.findUserByPasswordRecoveryCode(code);
@@ -236,5 +236,7 @@ export const authService = {
     }
 
     return ResultService.createResult(RESULT_CODES.Success_no_content, undefined, true);
-  },
-};
+  }
+}
+
+export const authService = new AuthService();

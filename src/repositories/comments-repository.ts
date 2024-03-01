@@ -4,7 +4,7 @@ import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '.
 import { mapDbCommentsToViewModel } from '../domain/comments/mappers/dbCommentToViewModel';
 import { CommentModel } from '../db/schemes/comments';
 
-export const commentsRepository = {
+export class CommentsRepository {
   async createCommentForPost(comment: CommentDbModel) {
     const createdCommentResponse = await CommentModel.create(comment);
 
@@ -13,7 +13,7 @@ export const commentsRepository = {
     }
 
     return null;
-  },
+  }
 
   async updateCommentById(commentId: string, commentContent: string) {
     const createdCommentResponse = await CommentModel.updateOne(
@@ -26,7 +26,7 @@ export const commentsRepository = {
     );
 
     return createdCommentResponse.matchedCount === 1;
-  },
+  }
 
   async findCommentById(commentId: string) {
     const comment = await CommentModel.findOne({ id: commentId });
@@ -36,12 +36,12 @@ export const commentsRepository = {
     }
 
     return null;
-  },
+  }
 
   async deleteCommentById(commentId: string) {
     const deleteResult = await CommentModel.deleteOne({ id: commentId });
     return deleteResult.deletedCount === 1;
-  },
+  }
 
   async findCommentsByPostId(postId: string, pagination: PaginationPayload<CommentViewModel>) {
     const { pageNumber, pageSize, sortBy, sortDirection } = pagination;
@@ -54,5 +54,7 @@ export const commentsRepository = {
     const totalCount = await CommentModel.countDocuments({ postId: postId });
 
     return createPaginationResponse<CommentViewModel>(pagination, mapDbCommentsToViewModel(dbComments), totalCount);
-  },
-};
+  }
+}
+
+export const commentsRepository = new CommentsRepository();

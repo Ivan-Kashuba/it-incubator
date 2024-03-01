@@ -6,7 +6,7 @@ import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '.
 import { BlogModel } from '../db/schemes/blogs';
 import { PostModel } from '../db/schemes/posts';
 
-export const blogsRepository = {
+export class BlogsRepository {
   async findBlogs(
     blogName: string | null,
     pagination: PaginationPayload<BlogViewModel>
@@ -27,17 +27,17 @@ export const blogsRepository = {
       .limit(pagination.pageSize);
 
     return createPaginationResponse<BlogViewModel>(pagination, foundedBlogs, totalCount);
-  },
+  }
 
   async findBlogById(blogId: string) {
     return BlogModel.findOne({ id: blogId }).select('-_id -__v');
-  },
+  }
 
   async createBlog(blogToCreate: BlogViewModel) {
     const createdBlogResult = await BlogModel.create(blogToCreate);
 
     return !!createdBlogResult._id;
-  },
+  }
 
   async updateBlog(blogId: string, updateInfo: Omit<BlogViewModel, 'isMembership' | 'createdAt'>) {
     const updatedBlogResponse = await BlogModel.findOneAndUpdate(
@@ -47,18 +47,18 @@ export const blogsRepository = {
     );
 
     return updatedBlogResponse;
-  },
+  }
 
   async deleteBlog(blogId: string) {
     const deleteResult = await BlogModel.deleteMany({ id: blogId });
     return deleteResult.deletedCount === 1;
-  },
+  }
 
   async createPostForBlog(post: PostDbModel) {
     const creatingResponse = await PostModel.create(post);
 
     return !!creatingResponse._id;
-  },
+  }
 
   async getPostsByBlogId(blog: BlogViewModel, pagination: PaginationPayload<PostViewModel>) {
     const { pageNumber, pageSize, sortBy, sortDirection } = pagination;
@@ -85,5 +85,7 @@ export const blogsRepository = {
     });
 
     return createPaginationResponse<PostViewModel>(pagination, viewPosts, totalCount);
-  },
-};
+  }
+}
+
+export const blogsRepository = new BlogsRepository();

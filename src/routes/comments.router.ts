@@ -9,9 +9,8 @@ import { validationCheckMiddleware } from '../middlewares/validationCheckMiddlew
 
 export const commentsRouter = express.Router();
 
-commentsRouter.get(
-  '/:commentId',
-  async (req: RequestWithParams<{ commentId: string }>, res: Response<CommentViewModel>) => {
+class CommentsController {
+  async getComment(req: RequestWithParams<{ commentId: string }>, res: Response<CommentViewModel>) {
     const commentId = req.params.commentId;
 
     const comment = await commentsRepository.findCommentById(commentId);
@@ -23,14 +22,11 @@ commentsRouter.get(
 
     res.status(STATUS_HTTP.OK_200).send(mapDbCommentToViewModel(comment));
   }
-);
 
-commentsRouter.put(
-  '/:commentId',
-  userAuthCheckMiddleware,
-  postCommentModelValidation,
-  validationCheckMiddleware,
-  async (req: RequestWithParamsAndBody<{ commentId: string }, CommentInputModel>, res: Response<CommentViewModel>) => {
+  async updateComment(
+    req: RequestWithParamsAndBody<{ commentId: string }, CommentInputModel>,
+    res: Response<CommentViewModel>
+  ) {
     const commentId = req.params.commentId;
     const userId = req?.user?.userId;
 
@@ -55,12 +51,8 @@ commentsRouter.put(
 
     res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
   }
-);
 
-commentsRouter.delete(
-  '/:commentId',
-  userAuthCheckMiddleware,
-  async (req: RequestWithParams<{ commentId: string }>, res: Response<CommentViewModel>) => {
+  async deleteComment(req: RequestWithParams<{ commentId: string }>, res: Response<CommentViewModel>) {
     const commentId = req.params.commentId;
     const commentToDelete = await commentsRepository.findCommentById(commentId);
     const userId = req?.user?.userId;
@@ -84,4 +76,18 @@ commentsRouter.delete(
 
     res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
   }
+}
+
+const commentsController = new CommentsController();
+
+commentsRouter.get('/:commentId', commentsController.getComment);
+
+commentsRouter.put(
+  '/:commentId',
+  userAuthCheckMiddleware,
+  postCommentModelValidation,
+  validationCheckMiddleware,
+  commentsController.updateComment
 );
+
+commentsRouter.delete('/:commentId', userAuthCheckMiddleware, commentsController.deleteComment);

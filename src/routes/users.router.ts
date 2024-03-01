@@ -13,12 +13,8 @@ import { mapDbUserToViewUser } from '../domain/users/mappers/userMapers';
 
 export const usersRouter = express.Router();
 
-usersRouter.post(
-  '/',
-  adminAuthCheckMiddleware,
-  inputUserValidation,
-  validationCheckMiddleware,
-  async (req: RequestWithBody<UserCreateModel>, res: Response) => {
+class UsersController {
+  async createUser(req: RequestWithBody<UserCreateModel>, res: Response) {
     const createdUserId = await usersService.createUser(req.body);
 
     if (createdUserId) {
@@ -30,17 +26,13 @@ usersRouter.post(
 
     res.status(STATUS_HTTP.NOT_IMPLEMENTED_501);
   }
-);
 
-usersRouter.get(
-  '/',
-  adminAuthCheckMiddleware,
-  async (
+  async getUsers(
     req: RequestWithQuery<
       { searchLoginTerm?: string; searchEmailTerm?: string } & Partial<PaginationPayload<UserViewModel>>
     >,
     res: Response
-  ) => {
+  ) {
     const searchLoginTerm = req.query.searchLoginTerm || null;
     const searchEmailTerm = req.query.searchEmailTerm || null;
 
@@ -55,12 +47,8 @@ usersRouter.get(
 
     res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
   }
-);
 
-usersRouter.delete(
-  '/:userId',
-  adminAuthCheckMiddleware,
-  async (req: RequestWithParams<{ userId: string }>, res: Response) => {
+  async deleteUser(req: RequestWithParams<{ userId: string }>, res: Response) {
     const userId = req.params.userId;
 
     const isUserDeleted = await usersService.deleteUser(userId);
@@ -72,4 +60,18 @@ usersRouter.delete(
 
     res.sendStatus(STATUS_HTTP.NOT_FOUND_404);
   }
+}
+
+const usersController = new UsersController();
+
+usersRouter.post(
+  '/',
+  adminAuthCheckMiddleware,
+  inputUserValidation,
+  validationCheckMiddleware,
+  usersController.createUser
 );
+
+usersRouter.get('/', adminAuthCheckMiddleware, usersController.getUsers);
+
+usersRouter.delete('/:userId', adminAuthCheckMiddleware, usersController.deleteUser);

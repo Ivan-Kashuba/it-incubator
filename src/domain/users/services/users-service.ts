@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import { usersRepository } from '../../../repositories/users-repository';
 import { PaginationPayload } from '../../../shared/types/Pagination';
 
-export const usersService = {
+export class UsersService {
   async createUser(userPayload: UserCreateModel) {
     const { login, password, email } = userPayload;
 
@@ -39,7 +39,7 @@ export const usersService = {
     };
 
     return await usersRepository.createUser(userToSave);
-  },
+  }
 
   async findUsers(
     pagination: PaginationPayload<UserViewModel>,
@@ -47,9 +47,11 @@ export const usersService = {
     searchEmailTerm: string | null
   ) {
     return await usersRepository.findUsers(pagination, searchLoginTerm, searchEmailTerm);
-  },
+  }
 
   async deleteUser(userId: string) {
     return await usersRepository.deleteUser(userId);
-  },
-};
+  }
+}
+
+export const usersService = new UsersService();

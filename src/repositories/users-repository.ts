@@ -5,11 +5,11 @@ import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '.
 import { mapDbUsersToViewUsers } from '../domain/users/mappers/userMapers';
 import { UserModel } from '../db/schemes/users';
 
-export const usersRepository = {
+export class UsersRepository {
   async createUser(user: UserDbModel) {
     const createResponse = await UserModel.create(user);
     return createResponse._id ? user.id : null;
-  },
+  }
 
   async findUsers(
     pagination: PaginationPayload<UserViewModel>,
@@ -37,19 +37,19 @@ export const usersRepository = {
       .limit(pagination.pageSize);
 
     return createPaginationResponse<UserViewModel>(pagination, mapDbUsersToViewUsers(foundedUsers), totalCount);
-  },
+  }
 
   async deleteUser(userId: string) {
     const deletedResponse = await UserModel.deleteOne({ id: userId });
 
     return deletedResponse.deletedCount === 1;
-  },
+  }
 
   async findUserByLoginOrEmail(loginOrEmail: string) {
     return UserModel.findOne({
       $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }],
     }).lean();
-  },
+  }
 
   async updateUserByLoginOrEmail(loginOrEmail: string, updateInfo: Partial<UserDbModel>) {
     return UserModel.findOneAndUpdate(
@@ -62,13 +62,15 @@ export const usersRepository = {
         },
       }
     ).lean();
-  },
+  }
 
   async findUserByRegistrationActivationCode(code: string) {
     return UserModel.findOne({ 'accountConfirmation.confirmationCode': code }).lean();
-  },
+  }
 
   async findUserByPasswordRecoveryCode(code: string) {
     return UserModel.findOne({ 'passwordRecovery.confirmationCode': code }).lean();
-  },
-};
+  }
+}
+
+export const usersRepository = new UsersRepository();

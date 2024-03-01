@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import { envConfig } from '../shared/helpers/env-config';
-export const emailManager = {
-  _getGoogleEmailConfiguration() {
+export class EmailManager {
+  private _getGoogleEmailConfiguration() {
     const mailTransporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -16,7 +16,7 @@ export const emailManager = {
     };
 
     return { mailTransporter, defaultMailDetails };
-  },
+  }
   async sendRegistrationConfirmEmail(userEmail: string, code: string) {
     const { defaultMailDetails, mailTransporter } = this._getGoogleEmailConfiguration();
 
@@ -31,7 +31,7 @@ export const emailManager = {
     } catch (err) {
       return false;
     }
-  },
+  }
 
   async sendPasswordRecoveryEmail(userEmail: string, code: string) {
     const { defaultMailDetails, mailTransporter } = this._getGoogleEmailConfiguration();
@@ -47,5 +47,7 @@ export const emailManager = {
     } catch (err) {
       return false;
     }
-  },
-};
+  }
+}
+
+export const emailManager = new EmailManager();

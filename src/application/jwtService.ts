@@ -4,7 +4,7 @@ import { UserTokenInfo } from '../domain/auth/types/model/Auth';
 import { MILLI_SECONDS_IN_SECOND } from '../shared/constants';
 import bcrypt from 'bcrypt';
 
-export const jwtService = {
+export class JwtService {
   async createJwt(userInfo: UserTokenInfo, expiresIn: SignOptions['expiresIn']) {
     return jwt.sign(
       {
@@ -18,7 +18,7 @@ export const jwtService = {
         expiresIn,
       }
     );
-  },
+  }
 
   async getUserInfoByToken(token: string) {
     try {
@@ -33,7 +33,7 @@ export const jwtService = {
     } catch (err) {
       return null;
     }
-  },
+  }
 
   async getJwtExpirationDate(token: string) {
     const payload: any = jwt.decode(token);
@@ -43,13 +43,15 @@ export const jwtService = {
     }
 
     return new Date(payload.exp * MILLI_SECONDS_IN_SECOND).toISOString();
-  },
+  }
 
   createSalt(rounds: number) {
     return bcrypt.genSaltSync(rounds);
-  },
+  }
 
   createHash(data: string, salt: string) {
     return bcrypt.hashSync(data, salt);
-  },
-};
+  }
+}
+
+export const jwtService = new JwtService();

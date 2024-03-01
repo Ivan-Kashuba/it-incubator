@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import { UserTokenInfo } from '../../auth/types/model/Auth';
 import { commentsRepository } from '../../../repositories/comments-repository';
 
-export const commentService = {
+export class CommentService {
   async createCommentForPost(postId: string, content: string, userInfo: UserTokenInfo) {
     const commentToCreate = {
       id: new ObjectId().toString(),
@@ -18,5 +18,7 @@ export const commentService = {
     const createdCommentId = await commentsRepository.createCommentForPost(commentToCreate);
 
     return createdCommentId;
-  },
-};
+  }
+}
+
+export const commentService = new CommentService();

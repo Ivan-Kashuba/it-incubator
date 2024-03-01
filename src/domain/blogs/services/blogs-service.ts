@@ -3,17 +3,17 @@ import { PostDbModel, PostViewModel } from '../../posts/types/model/PostModels';
 import { PaginationPayload, WithPagination } from '../../../shared/types/Pagination';
 import { blogsRepository as blogsRepository } from '../../../repositories/blogs-repository';
 
-export const blogsService = {
+export class BlogsService {
   async findBlogs(
     blogName: string | null,
     pagination: PaginationPayload<BlogViewModel>
   ): Promise<WithPagination<BlogViewModel>> {
     return await blogsRepository.findBlogs(blogName, pagination);
-  },
+  }
 
   async findBlogById(blogId: string) {
     return await blogsRepository.findBlogById(blogId);
-  },
+  }
 
   async createBlog(blog: BlogInputModel) {
     const { name, description, websiteUrl } = blog;
@@ -30,7 +30,7 @@ export const blogsService = {
     await blogsRepository.createBlog(newBlog);
 
     return newBlog.id;
-  },
+  }
 
   async updateBlog(blogId: string, blogInfo: BlogInputModel) {
     const { websiteUrl, description, name } = blogInfo;
@@ -45,11 +45,11 @@ export const blogsService = {
     const updatedBlog = await blogsRepository.updateBlog(blogId, updateInfo);
 
     return !!updatedBlog;
-  },
+  }
 
   async deleteBlog(blogId: string) {
     return await blogsRepository.deleteBlog(blogId);
-  },
+  }
 
   async createPostForBlog(blogId: string, postContent: BlogPostInputModel) {
     const { title, shortDescription, content } = postContent;
@@ -74,7 +74,7 @@ export const blogsService = {
     const isCreated = await blogsRepository.createPostForBlog(postToCreate);
 
     return isCreated ? postToCreate.id : null;
-  },
+  }
 
   async getPostsByBlogId(blogId: string, pagination: PaginationPayload<PostViewModel>) {
     const blog = await this.findBlogById(blogId);
@@ -84,5 +84,7 @@ export const blogsService = {
     }
 
     return await blogsRepository.getPostsByBlogId(blog, pagination);
-  },
-};
+  }
+}
+
+export const blogsService = new BlogsService();
