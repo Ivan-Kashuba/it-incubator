@@ -1,5 +1,5 @@
 import { AuthModel, UserTokenInfo } from '../types/model/Auth';
-import { usersRepository } from '../../../repositories/users-repository';
+import { UsersRepository } from '../../../repositories/users-repository';
 import { jwtService } from '../../../application/jwtService';
 import { UserCreateModel, UserDbModel } from '../../users/types/model/UsersModels';
 import { ObjectId } from 'mongodb';
@@ -12,8 +12,9 @@ import { Details } from 'express-useragent';
 import { Result, RESULT_CODES, ResultService } from '../../../shared/helpers/resultObject';
 
 export class AuthService {
+  constructor(protected usersRepository: UsersRepository) {}
   async loginByLoginOrEmail(credentials: AuthModel, userDeviceName: string, userIp: string) {
-    const userByLoginOrEmail = await usersRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
+    const userByLoginOrEmail = await this.usersRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
 
     if (!userByLoginOrEmail) return null;
     if (!userByLoginOrEmail?.accountConfirmation?.isConfirmed) return null;
@@ -77,7 +78,7 @@ export class AuthService {
     const isMailSent = await emailManager.sendRegistrationConfirmEmail(userInfo.email, confirmationCode);
 
     if (isMailSent) {
-      return await usersRepository.createUser(userSaveToDb);
+      return await this.usersRepository.createUser(userSaveToDb);
     } else {
       return null;
     }
@@ -94,7 +95,7 @@ export class AuthService {
       },
     };
 
-    const updatedUser = await usersRepository.updateUserByLoginOrEmail(userEmail, updateInfo);
+    const updatedUser = await this.usersRepository.updateUserByLoginOrEmail(userEmail, updateInfo);
     const isMailSent = await emailManager.sendRegistrationConfirmEmail(userEmail, confirmationCode);
 
     return isMailSent && !!updatedUser;
@@ -171,7 +172,7 @@ export class AuthService {
   async recoveryPassword(email: string) {
     const confirmationCode = uuidv4();
 
-    const user = await usersRepository.findUserByLoginOrEmail(email);
+    const user = await this.usersRepository.findUserByLoginOrEmail(email);
 
     if (!user) {
       return true;
@@ -179,7 +180,7 @@ export class AuthService {
 
     const isEmailSent = await emailManager.sendPasswordRecoveryEmail(email, confirmationCode);
 
-    const isUserInDbUpdated = await usersRepository.updateUserByLoginOrEmail(email, {
+    const isUserInDbUpdated = await this.usersRepository.updateUserByLoginOrEmail(email, {
       passwordRecovery: {
         confirmationCode,
         expirationDate: add(new Date(), { hours: 24 }).toISOString(),
@@ -190,7 +191,7 @@ export class AuthService {
   }
 
   async setNewPasswordForUserByCode(code: string, newPassword: string): Promise<Result<boolean>> {
-    const user = await usersRepository.findUserByPasswordRecoveryCode(code);
+    const user = await this.usersRepository.findUserByPasswordRecoveryCode(code);
 
     if (!user) {
       return ResultService.createResult(
@@ -219,7 +220,7 @@ export class AuthService {
 
     const salt = jwtService.createSalt(10);
 
-    const isUserInDbUpdated = await usersRepository.updateUserByLoginOrEmail(user.accountData.login, {
+    const isUserInDbUpdated = await this.usersRepository.updateUserByLoginOrEmail(user.accountData.login, {
       accountData: {
         ...user.accountData,
         salt: salt,
@@ -239,4 +240,4 @@ export class AuthService {
   }
 }
 
-export const authService = new AuthService();
+export const authService = new AuthService(new UsersRepository());
