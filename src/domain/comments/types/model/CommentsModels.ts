@@ -1,3 +1,5 @@
+import { LikeDbModel, LikeViewModel } from '../../../likes/types/model/LikesModels';
+
 export type CommentDbModel = {
   _id?: string;
   postId: string;
@@ -5,6 +7,7 @@ export type CommentDbModel = {
   content: string;
   commentatorInfo: CommentatorInfo;
   createdAt: string;
+  likes: LikeDbModel[];
 };
 
 export type CommentInputModel = {
@@ -21,4 +24,5 @@ export type CommentViewModel = {
   content: string;
   commentatorInfo: CommentatorInfo;
   createdAt: string;
+  likesInfo: LikeViewModel;
 };

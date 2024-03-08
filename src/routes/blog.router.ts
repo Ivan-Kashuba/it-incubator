@@ -18,6 +18,7 @@ import { blogsRepository } from '../repositories/blogs-repository';
 import { blogPostInputModelValidation } from '../domain/blogs/validation/blogPostInputModelValidation';
 import { PostViewModel } from '../domain/posts/types/model/PostModels';
 import { postsRepository } from '../repositories/posts-repository';
+import { getUserInfoFromTokenWithoutAuthCheck } from '../middlewares/getUserInfoFromTokenWithoutAuthCheck';
 
 export const blogRouter = express.Router();
 
@@ -121,7 +122,7 @@ class BlogsController {
 
 const blogsController = new BlogsController();
 
-blogRouter.get('/', blogsController.getBlogs);
+blogRouter.get('/', getUserInfoFromTokenWithoutAuthCheck, blogsController.getBlogs);
 blogRouter.post(
   '/',
   adminAuthCheckMiddleware,
@@ -129,7 +130,7 @@ blogRouter.post(
   validationCheckMiddleware,
   blogsController.createBlog
 );
-blogRouter.get('/:blogId', blogsController.getBlog);
+blogRouter.get('/:blogId', getUserInfoFromTokenWithoutAuthCheck, blogsController.getBlog);
 blogRouter.delete('/:blogId', adminAuthCheckMiddleware, blogsController.deleteBlog);
 blogRouter.put(
   '/:blogId',

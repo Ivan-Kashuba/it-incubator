@@ -12,6 +12,7 @@ import { ISO_STRING_REGEX } from '../src/shared/helpers/regex';
 import { UserViewModel } from '../src/domain/users/types/model/UsersModels';
 import mongoose from 'mongoose';
 import { envConfig } from '../src/shared/helpers/env-config';
+import { LIKE_STATUS } from '../src/domain/likes/types/model/LikesModels';
 
 const blogInputCorrectData: BlogInputModel = {
   name: 'New blog',
@@ -372,6 +373,11 @@ describe('Posts', () => {
           userLogin: user.login,
         },
         createdAt: expect.stringMatching(ISO_STRING_REGEX),
+        likesInfo: {
+          likesCount: 0,
+          dislikesCount: 0,
+          myStatus: LIKE_STATUS.None,
+        },
       };
     };
 

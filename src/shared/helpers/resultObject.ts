@@ -1,5 +1,5 @@
 import { STATUS_HTTP } from '../types/index';
-import { Error, ErrorResponse } from '../types/Error';
+import { ErrorResponse } from '../types/Error';
 
 export enum RESULT_CODES {
   'Success' = 0,

@@ -1,6 +1,6 @@
 import { PaginationPayload, WithPagination } from '../types/Pagination';
 import { SortDirection } from '../types/Sort';
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE, DEFAULT_PAGINATION_PAYLOAD } from '../constants/pagination';
+import { DEFAULT_PAGINATION_PAYLOAD } from '../constants/pagination';
 
 export function createPaginationResponse<T>(
   pagination: PaginationPayload<T>,

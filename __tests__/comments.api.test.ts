@@ -11,6 +11,7 @@ import { UserViewModel } from '../src/domain/users/types/model/UsersModels';
 import { ISO_STRING_REGEX } from '../src/shared/helpers/regex';
 import mongoose from 'mongoose';
 import { envConfig } from '../src/shared/helpers/env-config';
+import { LIKE_STATUS } from '../src/domain/likes/types/model/LikesModels';
 
 const Symbols300Text =
   'Text 301 symbol Some text text Some text text Some text text Some text textSome text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text textt';
@@ -139,6 +140,11 @@ describe('Comments', () => {
         userLogin: user1.login,
       },
       createdAt: expect.stringMatching(ISO_STRING_REGEX),
+      likesInfo: {
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: LIKE_STATUS.None,
+      },
     });
 
     await getRequest()

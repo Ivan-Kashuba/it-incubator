@@ -5,6 +5,7 @@ import { ISO_STRING_REGEX } from '../../src/shared/helpers/regex';
 import { PostInputModel, PostViewModel } from '../../src/domain/posts/types/model/PostModels';
 import { blogsRepository } from '../../src/repositories/blogs-repository';
 import { CommentInputModel } from '../../src/domain/comments/types/model/CommentsModels';
+import { LIKE_STATUS } from '../../src/domain/likes/types/model/LikesModels';
 
 export class PostTestManagerClass {
   async createPost(data: PostInputModel, expectedStatus = STATUS_HTTP.CREATED_201) {
@@ -55,6 +56,11 @@ export class PostTestManagerClass {
           userLogin: expect.any(String),
         },
         createdAt: expect.stringMatching(ISO_STRING_REGEX),
+        likesInfo: {
+          likesCount: 0,
+          dislikesCount: 0,
+          myStatus: LIKE_STATUS.None,
+        },
       });
 
       return { createResponse: successfulCreateResponse, createdComment };

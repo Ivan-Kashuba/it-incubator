@@ -1,8 +1,6 @@
-import { CommentDbModel, CommentViewModel } from '../domain/comments/types/model/CommentsModels';
-import { PaginationPayload } from '../shared/types/Pagination';
-import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
-import { mapDbCommentsToViewModel } from '../domain/comments/mappers/dbCommentToViewModel';
+import { CommentDbModel } from '../domain/comments/types/model/CommentsModels';
 import { CommentModel } from '../db/schemes/comments';
+import { LIKE_STATUS } from '../domain/likes/types/model/LikesModels';
 
 export class CommentsRepository {
   async createCommentForPost(comment: CommentDbModel) {
@@ -43,17 +41,46 @@ export class CommentsRepository {
     return deleteResult.deletedCount === 1;
   }
 
-  async findCommentsByPostId(postId: string, pagination: PaginationPayload<CommentViewModel>) {
-    const { pageNumber, pageSize, sortBy, sortDirection } = pagination;
+  async checkIfCommentHasLikeStatusByUser(commentId: string, userId: string) {
+    const isCommentWithSomeLikeStatus = await CommentModel.findOne({ id: commentId, 'likes.userId': userId }).lean();
 
-    const dbComments = await CommentModel.find({ postId: postId }, { projection: { _id: 0 } })
-      .sort({ [sortBy]: getSortDirectionMongoValue(sortDirection) })
-      .skip(getSkip(pageNumber, pageSize))
-      .limit(pagination.pageSize);
+    return !!isCommentWithSomeLikeStatus;
+  }
 
-    const totalCount = await CommentModel.countDocuments({ postId: postId });
+  async removeUsersLikeStatusByCommentAndUsersIds(commentId: string, userId: string) {
+    const comment = await CommentModel.findOne({ id: commentId, 'likes.userId': userId });
 
-    return createPaginationResponse<CommentViewModel>(pagination, mapDbCommentsToViewModel(dbComments), totalCount);
+    if (!comment) {
+      return false;
+    }
+
+    comment.likes = comment?.likes.filter((dbLike) => {
+      return dbLike.userId !== userId;
+    });
+
+    comment.save();
+
+    return true;
+  }
+
+  async setOrUpdateLikeStatus(commentId: string, likeStatus: LIKE_STATUS, userId: string) {
+    const comment = await this.findCommentById(commentId);
+
+    if (!comment) {
+      return false;
+    }
+
+    const existingLikeIndex = comment.likes.findIndex((like) => like.userId === userId);
+
+    if (existingLikeIndex !== -1) {
+      comment.likes[existingLikeIndex].status = likeStatus;
+    } else {
+      comment.likes.push({ status: likeStatus, userId });
+    }
+
+    const updatedComment = await comment.save();
+
+    return !!updatedComment;
   }
 }
 
