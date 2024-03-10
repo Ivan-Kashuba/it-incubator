@@ -22,6 +22,7 @@ import { postCommentModelValidation } from '../domain/comments/validation/postCo
 import { commentService } from '../domain/comments/services/comment-service';
 import { commentsRepository } from '../repositories/comments-repository';
 import { commentsQueryRepository } from '../repositories/comments-query-repository';
+import { getUserInfoFromTokenWithoutAuthCheck } from '../middlewares/getUserInfoFromTokenWithoutAuthCheck';
 
 export const postsRouter = express.Router();
 
@@ -161,7 +162,7 @@ postsRouter.put(
   postsController.updatePost
 );
 
-postsRouter.get('/:postId/comments', postsController.getPostComments);
+postsRouter.get('/:postId/comments', getUserInfoFromTokenWithoutAuthCheck, postsController.getPostComments);
 
 postsRouter.post(
   '/:postId/comments',
