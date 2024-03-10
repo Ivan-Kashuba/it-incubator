@@ -12,6 +12,7 @@ import { ISO_STRING_REGEX } from '../src/shared/helpers/regex';
 import mongoose from 'mongoose';
 import { envConfig } from '../src/shared/helpers/env-config';
 import { LIKE_STATUS } from '../src/domain/likes/types/model/LikesModels';
+import { ErrorResponse } from '../src/shared/types/Error';
 
 const Symbols300Text =
   'Text 301 symbol Some text text Some text text Some text text Some text textSome text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text textt';
@@ -190,5 +191,110 @@ describe('Comments', () => {
       .send({ content: 'Some valid massage length more than 20 symbols' })
       .expect(STATUS_HTTP.NO_CONTENT_204);
     getUserAuthorisedRequest(token1).delete(`/comments/${comment1User1!.id}`).expect(STATUS_HTTP.NO_CONTENT_204);
+  });
+  it('Like comments works check', async () => {
+    const { token1, token2, post1 } = startInfo;
+
+    const { createdComment: comment } = await PostTestManager.createCommentForPost(post1.id, token1, {
+      content: 'Some correct length 20 more string text text1',
+    });
+
+    const expectedErrorBadLikeStatus: ErrorResponse = {
+      errorsMessages: [
+        {
+          message: 'Bad like status enum value',
+          field: 'likeStatus',
+        },
+      ],
+    };
+
+    await getUserAuthorisedRequest(token1)
+      .put(`/comments/${comment!.id}/like-status`)
+      .send({ likeStatus: 'Invalid enum value' })
+      .expect(STATUS_HTTP.BAD_REQUEST_400, expectedErrorBadLikeStatus);
+
+    const expectedErrorNoFoundCommentForLike: ErrorResponse = {
+      errorsMessages: [
+        {
+          field: 'commentId',
+          message: 'Comment is not exist',
+        },
+      ],
+    };
+
+    await getUserAuthorisedRequest(token1)
+      .put(`/comments/-999999999999999999999/like-status`)
+      .send({ likeStatus: LIKE_STATUS.Like })
+      .expect(STATUS_HTTP.NOT_FOUND_404, expectedErrorNoFoundCommentForLike);
+
+    await getUserAuthorisedRequest(token1)
+      .put(`/comments/${comment!.id}/like-status`)
+      .send({ likeStatus: LIKE_STATUS.Like })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    const commentByUser1ViewResponse = await getUserAuthorisedRequest(token1)
+      .get(`/comments/${comment!.id}`)
+      .expect(STATUS_HTTP.OK_200);
+
+    const commentByUser2ViewResponse = await getUserAuthorisedRequest(token2)
+      .get(`/comments/${comment!.id}`)
+      .expect(STATUS_HTTP.OK_200);
+
+    expect(commentByUser1ViewResponse.body.likesInfo).toEqual({
+      likesCount: 1,
+      dislikesCount: 0,
+      myStatus: LIKE_STATUS.Like,
+    });
+
+    expect(commentByUser2ViewResponse.body.likesInfo).toEqual({
+      likesCount: 1,
+      dislikesCount: 0,
+      myStatus: LIKE_STATUS.None,
+    });
+
+    await getUserAuthorisedRequest(token2)
+      .put(`/comments/${comment!.id}/like-status`)
+      .send({ likeStatus: LIKE_STATUS.Like })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    const commentByUser2ViewAfterOwnLikeResponse = await getUserAuthorisedRequest(token2)
+      .get(`/comments/${comment!.id}`)
+      .expect(STATUS_HTTP.OK_200);
+
+    expect(commentByUser2ViewAfterOwnLikeResponse.body.likesInfo).toEqual({
+      likesCount: 2,
+      dislikesCount: 0,
+      myStatus: LIKE_STATUS.Like,
+    });
+
+    await getUserAuthorisedRequest(token2)
+      .put(`/comments/${comment!.id}/like-status`)
+      .send({ likeStatus: LIKE_STATUS.Dislike })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    const commentByUser2ViewAfterDislike = await getUserAuthorisedRequest(token2)
+      .get(`/comments/${comment!.id}`)
+      .expect(STATUS_HTTP.OK_200);
+
+    expect(commentByUser2ViewAfterDislike.body.likesInfo).toEqual({
+      likesCount: 1,
+      dislikesCount: 1,
+      myStatus: LIKE_STATUS.Dislike,
+    });
+
+    await getUserAuthorisedRequest(token2)
+      .put(`/comments/${comment!.id}/like-status`)
+      .send({ likeStatus: LIKE_STATUS.None })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    const commentByUser2ViewAfterNoneStatus = await getUserAuthorisedRequest(token2)
+      .get(`/comments/${comment!.id}`)
+      .expect(STATUS_HTTP.OK_200);
+
+    expect(commentByUser2ViewAfterNoneStatus.body.likesInfo).toEqual({
+      likesCount: 1,
+      dislikesCount: 0,
+      myStatus: LIKE_STATUS.None,
+    });
   });
 });
