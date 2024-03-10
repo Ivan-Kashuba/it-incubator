@@ -28,7 +28,7 @@ export class CommentService {
     const comment = await commentsRepository.findCommentById(commentId);
 
     if (!comment) {
-      ResultService.createResult(
+      return ResultService.createResult(
         RESULT_CODES.Not_found,
         ResultService.createError('commentId', 'Comment is not exist')
       );

@@ -10,6 +10,7 @@ import { LikeInputModel } from '../domain/likes/types/model/LikesModels';
 import { ResultService } from '../shared/helpers/resultObject';
 import { commentsQueryRepository } from '../repositories/comments-query-repository';
 import { getUserInfoFromTokenWithoutAuthCheck } from '../middlewares/getUserInfoFromTokenWithoutAuthCheck';
+import { likeCommentValidation } from '../domain/comments/validation/likeCommentValidationSchema';
 
 export const commentsRouter = express.Router();
 
@@ -112,8 +113,8 @@ commentsRouter.put(
 commentsRouter.put(
   '/:commentId/like-status',
   userAuthCheckMiddleware,
-  // postCommentModelValidation,
-  // validationCheckMiddleware,
+  likeCommentValidation,
+  validationCheckMiddleware,
   commentsController.updateCommentLikeStatus
 );
 
