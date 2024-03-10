@@ -94,6 +94,7 @@ class PostsController {
     res: Response<WithPagination<CommentViewModel>>
   ) {
     const postId = req.params.postId;
+    const userId = req?.user?.userId;
 
     const pagination: PaginationPayload<CommentViewModel> = validatePayloadPagination(req.query, 'createdAt');
 
@@ -104,7 +105,7 @@ class PostsController {
       return;
     }
 
-    const comments = await commentsQueryRepository.findCommentsByPostId(postId, pagination);
+    const comments = await commentsQueryRepository.findCommentsByPostId(postId, pagination, userId);
 
     res.status(STATUS_HTTP.OK_200).send(comments);
   }
