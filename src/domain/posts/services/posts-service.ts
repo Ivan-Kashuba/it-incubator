@@ -1,17 +1,20 @@
 import { PostDbModel, PostInputModel, PostViewModel } from '../types/model/PostModels';
 import { PaginationPayload, WithPagination } from '../../../shared/types/Pagination';
-import { postsRepository } from '../../../repositories/posts-repository';
-
+import { PostsRepository } from '../../../repositories/posts-repository';
+import { injectable } from 'inversify';
+@injectable()
 export class PostsService {
+  constructor(protected postsRepository: PostsRepository) {}
+
   async findPosts(
     title: string | null,
     pagination: PaginationPayload<PostViewModel>
   ): Promise<WithPagination<PostViewModel>> {
-    return await postsRepository.findPosts(title, pagination);
+    return await this.postsRepository.findPosts(title, pagination);
   }
 
   async findPostById(postId: string) {
-    return await postsRepository.findPostById(postId);
+    return await this.postsRepository.findPostById(postId);
   }
 
   async createPost(postInfo: PostInputModel) {
@@ -28,7 +31,7 @@ export class PostsService {
       createdAt: new Date().toISOString(),
     };
 
-    const isPostCreated = await postsRepository.createPost(newPost);
+    const isPostCreated = await this.postsRepository.createPost(newPost);
 
     return isPostCreated ? newPost?.id : undefined;
   }
@@ -43,14 +46,12 @@ export class PostsService {
       blogId,
     };
 
-    const isUpdated = await postsRepository.updatePost(postId, updateInfo);
+    const isUpdated = await this.postsRepository.updatePost(postId, updateInfo);
 
     return isUpdated;
   }
 
   async deletePost(postId: string) {
-    return await postsRepository.deletePost(postId);
+    return await this.postsRepository.deletePost(postId);
   }
 }
-
-export const postsService = new PostsService();

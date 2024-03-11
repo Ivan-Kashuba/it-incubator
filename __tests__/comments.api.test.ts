@@ -1,9 +1,5 @@
 import { getAdminAllowedRequest, getRequest, getUserAuthorisedRequest } from './util/shared';
-
-import { BlogTestManager } from './util/BlogTestManager';
 import { defaultUsersInputData } from './util/UserTestManager';
-import { AuthTestManager } from './util/AuthTestManager';
-import { PostTestManager } from './util/PostsTestManager';
 import { BlogViewModel } from '../src/domain/blogs/types/model/BlogModels';
 import { PostViewModel } from '../src/domain/posts/types/model/PostModels';
 import { STATUS_HTTP } from '../src/shared/types/index';
@@ -13,6 +9,7 @@ import mongoose from 'mongoose';
 import { envConfig } from '../src/shared/helpers/env-config';
 import { LIKE_STATUS } from '../src/domain/likes/types/model/LikesModels';
 import { ErrorResponse } from '../src/shared/types/Error';
+import { AuthTestManager, BlogTestManager, PostTestManager } from '../src/composition-root';
 
 const Symbols300Text =
   'Text 301 symbol Some text text Some text text Some text text Some text textSome text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text textt';

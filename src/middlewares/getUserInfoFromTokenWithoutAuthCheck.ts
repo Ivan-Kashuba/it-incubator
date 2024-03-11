@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { jwtService } from '../application/jwtService';
+
+import { jwtService } from '../composition-root';
 
 export const getUserInfoFromTokenWithoutAuthCheck = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;

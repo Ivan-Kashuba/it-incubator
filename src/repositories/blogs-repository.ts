@@ -5,7 +5,9 @@ import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
 import { BlogModel } from '../db/schemes/blogs';
 import { PostModel } from '../db/schemes/posts';
+import { injectable } from 'inversify';
 
+@injectable()
 export class BlogsRepository {
   async findBlogs(
     blogName: string | null,
@@ -87,5 +89,3 @@ export class BlogsRepository {
     return createPaginationResponse<PostViewModel>(pagination, viewPosts, totalCount);
   }
 }
-
-export const blogsRepository = new BlogsRepository();

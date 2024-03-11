@@ -1,11 +1,14 @@
 import { ObjectId } from 'mongodb';
 import { UserTokenInfo } from '../../auth/types/model/Auth';
-import { commentsRepository } from '../../../repositories/comments-repository';
+import { CommentsRepository } from '../../../repositories/comments-repository';
 import { LIKE_STATUS } from '../../likes/types/model/LikesModels';
 import { RESULT_CODES, ResultService } from '../../../shared/helpers/resultObject';
 import { CommentDbModel } from '../types/model/CommentsModels';
-
+import { injectable } from 'inversify';
+@injectable()
 export class CommentService {
+  constructor(protected commentsRepository: CommentsRepository) {}
+
   async createCommentForPost(postId: string, content: string, userInfo: UserTokenInfo) {
     const commentToCreate: CommentDbModel = {
       id: new ObjectId().toString(),
@@ -19,13 +22,13 @@ export class CommentService {
       likes: [],
     };
 
-    const createdCommentId = await commentsRepository.createCommentForPost(commentToCreate);
+    const createdCommentId = await this.commentsRepository.createCommentForPost(commentToCreate);
 
     return createdCommentId;
   }
 
   async likeComment(commentId: string, likeStatus: LIKE_STATUS, userId: string) {
-    const comment = await commentsRepository.findCommentById(commentId);
+    const comment = await this.commentsRepository.findCommentById(commentId);
 
     if (!comment) {
       return ResultService.createResult(
@@ -34,13 +37,13 @@ export class CommentService {
       );
     }
 
-    const isCommentAlreadyLikedOrDislikedByUser = await commentsRepository.checkIfCommentHasLikeStatusByUser(
+    const isCommentAlreadyLikedOrDislikedByUser = await this.commentsRepository.checkIfCommentHasLikeStatusByUser(
       commentId,
       userId
     );
 
     if (isCommentAlreadyLikedOrDislikedByUser && likeStatus === LIKE_STATUS.None) {
-      const isRemovedLike = await commentsRepository.removeUsersLikeStatusByCommentAndUsersIds(commentId, userId);
+      const isRemovedLike = await this.commentsRepository.removeUsersLikeStatusByCommentAndUsersIds(commentId, userId);
 
       if (isRemovedLike) {
         return ResultService.createResult(RESULT_CODES.Success_no_content);
@@ -53,7 +56,7 @@ export class CommentService {
       return ResultService.createResult(RESULT_CODES.Success_no_content);
     }
 
-    const isLikeUpdated = await commentsRepository.setOrUpdateLikeStatus(commentId, likeStatus, userId);
+    const isLikeUpdated = await this.commentsRepository.setOrUpdateLikeStatus(commentId, likeStatus, userId);
 
     if (isLikeUpdated) {
       return ResultService.createResult(RESULT_CODES.Success_no_content);
@@ -62,5 +65,3 @@ export class CommentService {
     }
   }
 }
-
-export const commentService = new CommentService();

@@ -1,4 +1,4 @@
-import { blogsRepository } from '../../repositories/blogs-repository';
+import { BlogsRepository } from '../../repositories/blogs-repository';
 
 export const isBlogWithIdExistsInDbValidation = {
   notEmpty: {
@@ -7,7 +7,7 @@ export const isBlogWithIdExistsInDbValidation = {
   custom: {
     options: async (blogId: string) => {
       try {
-        const blog = await blogsRepository.findBlogById(blogId);
+        const blog = await new BlogsRepository().findBlogById(blogId);
         if (!blog) {
           throw new Error('Blog with current Id does not exist');
         }

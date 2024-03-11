@@ -9,9 +9,11 @@ import { setRateLimit } from '../middlewares/rateLimit';
 import { passwordRecoveryValidation } from '../domain/auth/validation/passwordRecoveryValidation';
 import { resendEmailForRegistrationConfirmationValidation } from '../domain/auth/validation/resendEmailForRegistrationConfirmationValidation';
 import { changePasswordValidation } from '../domain/auth/validation/changePasswordValidation';
-import { authController } from '../composition-root';
+import { container } from '../composition-root';
+import { AuthController } from '../controllers/auth-controller';
 
 export const authRouter = express.Router();
+const authController = container.get(AuthController);
 
 authRouter.post(
   '/login',

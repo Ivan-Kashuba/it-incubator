@@ -4,7 +4,8 @@ import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsens
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
 import { mapDbUsersToViewUsers } from '../domain/users/mappers/userMapers';
 import { UserModel } from '../db/schemes/users';
-
+import { injectable } from 'inversify';
+@injectable()
 export class UsersRepository {
   async createUser(user: UserDbModel) {
     const createResponse = await UserModel.create(user);

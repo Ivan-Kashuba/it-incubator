@@ -3,7 +3,9 @@ import { envConfig } from '../shared/helpers/env-config';
 import { UserTokenInfo } from '../domain/auth/types/model/Auth';
 import { MILLI_SECONDS_IN_SECOND } from '../shared/constants';
 import bcrypt from 'bcrypt';
+import { injectable } from 'inversify';
 
+@injectable()
 export class JwtService {
   async createJwt(userInfo: UserTokenInfo, expiresIn: SignOptions['expiresIn']) {
     return jwt.sign(
@@ -53,5 +55,3 @@ export class JwtService {
     return bcrypt.hashSync(data, salt);
   }
 }
-
-export const jwtService = new JwtService();

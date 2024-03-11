@@ -2,7 +2,9 @@ import { STATUS_HTTP } from '../../src/shared/types';
 import { getAdminAllowedRequest, SuperTestBodyResponse } from './shared';
 import { ISO_STRING_REGEX } from '../../src/shared/helpers/regex';
 import { UserCreateModel, UserViewModel } from '../../src/domain/users/types/model/UsersModels';
+import { injectable } from 'inversify';
 
+@injectable()
 export class UserTestManagerClass {
   async createUser(data: UserCreateModel, expectedStatus = STATUS_HTTP.CREATED_201) {
     const createResponse = await getAdminAllowedRequest().post('/users').send(data).expect(expectedStatus);
@@ -24,8 +26,6 @@ export class UserTestManagerClass {
     return { createResponse };
   }
 }
-
-export const UserTestManager = new UserTestManagerClass();
 
 export const defaultUsersInputData: UserCreateModel[] = [
   { email: 'Email1@gm.com', password: '123456789', login: 'Login1' },

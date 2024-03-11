@@ -4,7 +4,8 @@ import { postWithBlogNameAggregate } from '../domain/posts/aggregations/postWith
 import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
 import { PostModel } from '../db/schemes/posts';
-
+import { injectable } from 'inversify';
+@injectable()
 export class PostsRepository {
   async findPosts(
     title: string | null,
@@ -53,5 +54,3 @@ export class PostsRepository {
     return deleteResult.deletedCount === 1;
   }
 }
-
-export const postsRepository = new PostsRepository();

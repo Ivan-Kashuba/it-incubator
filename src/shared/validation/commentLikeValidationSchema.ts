@@ -1,4 +1,3 @@
-import { blogsRepository } from '../../repositories/blogs-repository';
 import { LIKE_STATUS } from '../../domain/likes/types/model/LikesModels';
 
 export const commentLikeValidationSchema = {

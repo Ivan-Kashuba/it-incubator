@@ -1,18 +1,14 @@
 import { STATUS_HTTP } from '../src/shared/types';
 import { getAdminAllowedRequest, getRequest, getUserAuthorisedRequest } from './util/shared';
-
-import { BlogTestManager } from './util/BlogTestManager';
-
 import { ErrorResponse } from '../src/shared/types/Error';
 import { PostInputModel, PostViewModel } from '../src/domain/posts/types/model/PostModels';
 import { BlogInputModel, BlogViewModel } from '../src/domain/blogs/types/model/BlogModels';
-import { UserTestManager } from './util/UserTestManager';
-import { AuthTestManager } from './util/AuthTestManager';
 import { ISO_STRING_REGEX } from '../src/shared/helpers/regex';
 import { UserViewModel } from '../src/domain/users/types/model/UsersModels';
 import mongoose from 'mongoose';
 import { envConfig } from '../src/shared/helpers/env-config';
 import { LIKE_STATUS } from '../src/domain/likes/types/model/LikesModels';
+import { AuthTestManager, BlogTestManager, UserTestManager } from '../src/composition-root';
 
 const blogInputCorrectData: BlogInputModel = {
   name: 'New blog',

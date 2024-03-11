@@ -3,11 +3,15 @@ import { getAdminAllowedRequest, getUserAuthorisedRequest, SuperTestBodyResponse
 
 import { ISO_STRING_REGEX } from '../../src/shared/helpers/regex';
 import { PostInputModel, PostViewModel } from '../../src/domain/posts/types/model/PostModels';
-import { blogsRepository } from '../../src/repositories/blogs-repository';
+import { BlogsRepository } from '../../src/repositories/blogs-repository';
 import { CommentInputModel } from '../../src/domain/comments/types/model/CommentsModels';
 import { LIKE_STATUS } from '../../src/domain/likes/types/model/LikesModels';
+import { injectable } from 'inversify';
 
+@injectable()
 export class PostTestManagerClass {
+  constructor(protected blogsRepository: BlogsRepository) {}
+
   async createPost(data: PostInputModel, expectedStatus = STATUS_HTTP.CREATED_201) {
     const createResponse = await getAdminAllowedRequest().post('/posts').send(data).expect(expectedStatus);
 
@@ -15,7 +19,7 @@ export class PostTestManagerClass {
       const successfulCreateResponse: SuperTestBodyResponse<PostViewModel> = createResponse;
       const createdPost = successfulCreateResponse?.body;
 
-      const blog = await blogsRepository.findBlogById(data.blogId);
+      const blog = await this.blogsRepository.findBlogById(data.blogId);
 
       expect(createdPost).toEqual({
         id: expect.any(String),
@@ -69,5 +73,3 @@ export class PostTestManagerClass {
     return { createResponse };
   }
 }
-
-export const PostTestManager = new PostTestManagerClass();

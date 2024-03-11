@@ -1,7 +1,8 @@
 import { CommentDbModel } from '../domain/comments/types/model/CommentsModels';
 import { CommentModel } from '../db/schemes/comments';
 import { LIKE_STATUS } from '../domain/likes/types/model/LikesModels';
-
+import { injectable } from 'inversify';
+@injectable()
 export class CommentsRepository {
   async createCommentForPost(comment: CommentDbModel) {
     const createdCommentResponse = await CommentModel.create(comment);
@@ -83,5 +84,3 @@ export class CommentsRepository {
     return !!updatedComment;
   }
 }
-
-export const commentsRepository = new CommentsRepository();

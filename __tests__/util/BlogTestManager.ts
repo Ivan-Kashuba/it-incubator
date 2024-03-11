@@ -4,7 +4,8 @@ import { getAdminAllowedRequest, SuperTestBodyResponse } from './shared';
 import { ISO_STRING_REGEX } from '../../src/shared/helpers/regex';
 import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../../src/domain/blogs/types/model/BlogModels';
 import { PostViewModel } from '../../src/domain/posts/types/model/PostModels';
-
+import { injectable } from 'inversify';
+@injectable()
 export class BlogTestManagerClass {
   async createBlog(data: BlogInputModel, expectedStatus = STATUS_HTTP.CREATED_201) {
     const createResponse = await getAdminAllowedRequest().post('/blogs').send(data).expect(expectedStatus);
@@ -53,5 +54,3 @@ export class BlogTestManagerClass {
     return { createResponse };
   }
 }
-
-export const BlogTestManager = new BlogTestManagerClass();

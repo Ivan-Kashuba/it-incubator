@@ -1,25 +1,29 @@
 import { AuthModel, UserTokenInfo } from '../types/model/Auth';
 import { UsersRepository } from '../../../repositories/users-repository';
-import { jwtService } from '../../../application/jwtService';
 import { UserCreateModel, UserDbModel } from '../../users/types/model/UsersModels';
 import { ObjectId } from 'mongodb';
 import { add, isBefore } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { emailManager } from '../../../adapters/emailAdapter';
-
-import { authRepository } from '../../../repositories/auth-repository';
 import { Details } from 'express-useragent';
 import { Result, RESULT_CODES, ResultService } from '../../../shared/helpers/resultObject';
-
+import { injectable } from 'inversify';
+import { AuthRepository } from '../../../repositories/auth-repository';
+import { JwtService } from '../../../application/jwtService';
+@injectable()
 export class AuthService {
-  constructor(protected usersRepository: UsersRepository) {}
+  constructor(
+    protected usersRepository: UsersRepository,
+    protected authRepository: AuthRepository,
+    protected jwtService: JwtService
+  ) {}
   async loginByLoginOrEmail(credentials: AuthModel, userDeviceName: string, userIp: string) {
     const userByLoginOrEmail = await this.usersRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
 
     if (!userByLoginOrEmail) return null;
     if (!userByLoginOrEmail?.accountConfirmation?.isConfirmed) return null;
     if (
-      jwtService.createHash(credentials.password, userByLoginOrEmail?.accountData.salt) !==
+      this.jwtService.createHash(credentials.password, userByLoginOrEmail?.accountData.salt) !==
       userByLoginOrEmail.accountData.hash
     )
       return null;
@@ -35,9 +39,9 @@ export class AuthService {
 
     const { refreshToken, accessToken } = await this.createJwtKeys(userInfo);
 
-    const expirationTokenDate = await jwtService.getJwtExpirationDate(refreshToken);
+    const expirationTokenDate = await this.jwtService.getJwtExpirationDate(refreshToken);
 
-    await authRepository.addUserSession({
+    await this.authRepository.addUserSession({
       _id: new ObjectId().toString(),
       userId: userByLoginOrEmail.id,
       ip: userIp,
@@ -50,7 +54,7 @@ export class AuthService {
   }
 
   async registerUser(userInfo: UserCreateModel) {
-    const salt = jwtService.createSalt(10);
+    const salt = this.jwtService.createSalt(10);
     const confirmationCode = uuidv4();
 
     const currentDate = new Date().toISOString();
@@ -62,7 +66,7 @@ export class AuthService {
         email: userInfo.email,
         createdAt: currentDate,
         salt: salt,
-        hash: jwtService.createHash(userInfo.password, salt),
+        hash: this.jwtService.createHash(userInfo.password, salt),
       },
       accountConfirmation: {
         isConfirmed: false,
@@ -102,8 +106,8 @@ export class AuthService {
   }
 
   async createJwtKeys(userInfo: UserTokenInfo) {
-    const accessToken = await jwtService.createJwt(userInfo, '6m');
-    const refreshToken = await jwtService.createJwt(userInfo, '30d');
+    const accessToken = await this.jwtService.createJwt(userInfo, '6m');
+    const refreshToken = await this.jwtService.createJwt(userInfo, '30d');
 
     return {
       accessToken,
@@ -119,10 +123,10 @@ export class AuthService {
   }
 
   async getUserSessionByIdAndRefreshToken(userId: string, refreshToken: string) {
-    const usersSessions = await authRepository.getUserSessionsList(userId);
+    const usersSessions = await this.authRepository.getUserSessionsList(userId);
 
-    const user = await jwtService.getUserInfoByToken(refreshToken);
-    const refreshTokenExpirationDate = await jwtService.getJwtExpirationDate(refreshToken);
+    const user = await this.jwtService.getUserInfoByToken(refreshToken);
+    const refreshTokenExpirationDate = await this.jwtService.getJwtExpirationDate(refreshToken);
 
     if (!refreshTokenExpirationDate) return null;
 
@@ -136,19 +140,19 @@ export class AuthService {
   }
 
   async updateUserDeviceSession(sessionId: string, refreshToken: string) {
-    const expirationTokenDate = await jwtService.getJwtExpirationDate(refreshToken);
+    const expirationTokenDate = await this.jwtService.getJwtExpirationDate(refreshToken);
 
-    return await authRepository.updateUserDeviceSession(sessionId, {
+    return await this.authRepository.updateUserDeviceSession(sessionId, {
       lastActiveDate: expirationTokenDate!,
     });
   }
 
   async removeAllButCurrentUserSession(userId: string, currentSessionId: string) {
-    return await authRepository.removeAllButCurrentUserSession(userId, currentSessionId);
+    return await this.authRepository.removeAllButCurrentUserSession(userId, currentSessionId);
   }
 
   async removeSessionByDeviceAndUsersIds(deviceId: string, userId: string): Promise<Result<void>> {
-    const sessionToRemove = await authRepository.getSessionByDeviceId(deviceId);
+    const sessionToRemove = await this.authRepository.getSessionByDeviceId(deviceId);
 
     if (!sessionToRemove) {
       return ResultService.createResult(RESULT_CODES.Not_found);
@@ -160,7 +164,7 @@ export class AuthService {
       return ResultService.createResult(RESULT_CODES.Forbidden, 'User is not allowed to delete this session');
     }
 
-    const isDeleted = await authRepository.removeUserSession(sessionToRemove._id);
+    const isDeleted = await this.authRepository.removeUserSession(sessionToRemove._id);
 
     if (isDeleted) {
       return ResultService.createResult(RESULT_CODES.Success_no_content);
@@ -218,13 +222,13 @@ export class AuthService {
       );
     }
 
-    const salt = jwtService.createSalt(10);
+    const salt = this.jwtService.createSalt(10);
 
     const isUserInDbUpdated = await this.usersRepository.updateUserByLoginOrEmail(user.accountData.login, {
       accountData: {
         ...user.accountData,
         salt: salt,
-        hash: jwtService.createHash(newPassword, salt),
+        hash: this.jwtService.createHash(newPassword, salt),
       },
       passwordRecovery: {
         confirmationCode: null,
@@ -239,5 +243,3 @@ export class AuthService {
     return ResultService.createResult(RESULT_CODES.Success_no_content, undefined, true);
   }
 }
-
-export const authService = new AuthService(new UsersRepository());

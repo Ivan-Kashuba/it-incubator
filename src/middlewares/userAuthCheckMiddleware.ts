@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { STATUS_HTTP } from '../shared/types';
-import { jwtService } from '../application/jwtService';
+
+import { jwtService } from '../composition-root';
 
 export const userAuthCheckMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;

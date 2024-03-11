@@ -3,7 +3,8 @@ import { PaginationPayload } from '../shared/types/Pagination';
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
 import { CommentModel } from '../db/schemes/comments';
 import { LIKE_STATUS } from '../domain/likes/types/model/LikesModels';
-
+import { injectable } from 'inversify';
+@injectable()
 export class CommentsQueryRepository {
   async findCommentById(commentId: string, userId?: string) {
     const comment = await CommentModel.findOne({ id: commentId });
@@ -48,5 +49,3 @@ export class CommentsQueryRepository {
     return commentViewModel;
   }
 }
-
-export const commentsQueryRepository = new CommentsQueryRepository();

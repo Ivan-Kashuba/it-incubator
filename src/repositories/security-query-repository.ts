@@ -1,6 +1,7 @@
 import { DeviceSessionDTO, DeviceSessionViewModel } from '../domain/auth/types/model/Auth';
 import { SessionModel } from '../db/schemes/sessions';
-
+import { injectable } from 'inversify';
+@injectable()
 export class SecurityQueryRepository {
   async getUserSessionsListById(userId: string) {
     const dbUserSessions = await SessionModel.find({ userId });
@@ -17,5 +18,3 @@ export class SecurityQueryRepository {
     };
   }
 }
-
-export const securityQueryRepository = new SecurityQueryRepository();

@@ -1,10 +1,10 @@
 import { STATUS_HTTP } from '../src/shared/types';
 import { getAdminAllowedRequest } from './util/shared';
-import { UserTestManager } from './util/UserTestManager';
 import { ErrorResponse } from '../src/shared/types/Error';
 import { UserViewModel } from '../src/domain/users/types/model/UsersModels';
 import mongoose from 'mongoose';
 import { envConfig } from '../src/shared/helpers/env-config';
+import { UserTestManager } from '../src/composition-root';
 
 let user1: UserViewModel = {} as UserViewModel;
 let user2: UserViewModel = {} as UserViewModel;

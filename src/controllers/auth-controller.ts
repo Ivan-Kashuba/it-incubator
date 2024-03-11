@@ -7,7 +7,9 @@ import { AuthModel, PasswordRecoveryInputModel } from '../domain/auth/types/mode
 import { Request, Response } from 'express';
 import { UserCreateModel } from '../domain/users/types/model/UsersModels';
 import { ResultService } from '../shared/helpers/resultObject';
+import { injectable } from 'inversify';
 
+@injectable()
 export class AuthController {
   constructor(
     protected authService: AuthService,

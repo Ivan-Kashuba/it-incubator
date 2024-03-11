@@ -1,6 +1,5 @@
 import { getAdminAllowedRequest, getRequest, getUserAuthorisedRequest } from './util/shared';
 import { STATUS_HTTP } from '../src/shared/types/index';
-import { UserTestManager } from './util/UserTestManager';
 import { UserCreateModel, UserViewModel } from '../src/domain/users/types/model/UsersModels';
 import { ErrorResponse } from '../src/shared/types/Error';
 import { usersRepository } from '../src/repositories/users-repository';
@@ -8,10 +7,10 @@ import { add } from 'date-fns';
 import { ISO_STRING_REGEX } from '../src/shared/helpers/regex';
 import { ObjectId } from 'mongodb';
 import { emailManager } from '../src/adapters/emailAdapter';
-import { AuthTestManager } from './util/AuthTestManager';
 import { delay } from './util/delay';
 import mongoose from 'mongoose';
 import { envConfig } from '../src/shared/helpers/env-config';
+import { AuthTestManager, UserTestManager } from '../src/composition-root';
 
 const userCredentials1: UserCreateModel = { email: 'user1email@gm.com', login: 'User1', password: '123456789' };
 const userCredentials2: UserCreateModel = { email: 'user2email@gm.com', login: 'User2', password: '123456789' };

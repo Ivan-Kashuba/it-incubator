@@ -1,6 +1,8 @@
 import { DeviceSessionDTO } from '../domain/auth/types/model/Auth';
 import { SessionModel } from '../db/schemes/sessions';
+import { injectable } from 'inversify';
 
+@injectable()
 export class AuthRepository {
   async addUserSession(userSession: DeviceSessionDTO) {
     const { _id } = await SessionModel.create(userSession);
@@ -31,5 +33,3 @@ export class AuthRepository {
     return deleteResult.acknowledged;
   }
 }
-
-export const authRepository = new AuthRepository();

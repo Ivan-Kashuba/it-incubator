@@ -2,11 +2,14 @@ import { STATUS_HTTP } from '../../src/shared/types';
 import { getRequest, SuperTestBodyResponse } from './shared';
 import { AuthModel } from '../../src/domain/auth/types/model/Auth';
 import { UserCreateModel } from '../../src/domain/users/types/model/UsersModels';
-import { UserTestManager } from './UserTestManager';
-import { jwtService } from '../../src/application/jwtService';
 import { Response } from 'supertest';
-
+import { jwtService } from '../../src/composition-root';
+import { injectable } from 'inversify';
+import { UserTestManagerClass } from './UserTestManager';
+@injectable()
 export class AuthTestManagerClass {
+  constructor(protected UserTestManager: UserTestManagerClass) {}
+
   async login(data: AuthModel, expectedStatus = STATUS_HTTP.OK_200) {
     const createResponse = await getRequest().post('/auth/login').send(data).expect(expectedStatus);
 
@@ -29,7 +32,7 @@ export class AuthTestManagerClass {
   }
 
   async createUserAndLogin(userData: UserCreateModel) {
-    const { createdUser } = await UserTestManager.createUser(userData);
+    const { createdUser } = await this.UserTestManager.createUser(userData);
 
     const { createdTokenResponse, refreshToken } = await this.login({
       loginOrEmail: createdUser!.login,
@@ -45,5 +48,3 @@ export class AuthTestManagerClass {
       : null;
   }
 }
-
-export const AuthTestManager = new AuthTestManagerClass();

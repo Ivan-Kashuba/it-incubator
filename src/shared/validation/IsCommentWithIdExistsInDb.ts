@@ -1,4 +1,4 @@
-import { postsRepository } from '../../repositories/posts-repository';
+import { PostsRepository } from '../../repositories/posts-repository';
 
 export const isCommentWithIdExistsInDb = {
   notEmpty: {
@@ -7,7 +7,7 @@ export const isCommentWithIdExistsInDb = {
   custom: {
     options: async (postId: string) => {
       try {
-        const post = await postsRepository.findPostById(postId);
+        const post = await new PostsRepository().findPostById(postId);
         if (!post) {
           throw new Error('Blog with current Id does not exist');
         }

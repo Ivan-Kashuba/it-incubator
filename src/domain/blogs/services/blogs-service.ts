@@ -1,18 +1,21 @@
 import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../types/model/BlogModels';
 import { PostDbModel, PostViewModel } from '../../posts/types/model/PostModels';
 import { PaginationPayload, WithPagination } from '../../../shared/types/Pagination';
-import { blogsRepository as blogsRepository } from '../../../repositories/blogs-repository';
-
+import { BlogsRepository } from '../../../repositories/blogs-repository';
+import { injectable } from 'inversify';
+@injectable()
 export class BlogsService {
+  constructor(protected blogsRepository: BlogsRepository) {}
+
   async findBlogs(
     blogName: string | null,
     pagination: PaginationPayload<BlogViewModel>
   ): Promise<WithPagination<BlogViewModel>> {
-    return await blogsRepository.findBlogs(blogName, pagination);
+    return await this.blogsRepository.findBlogs(blogName, pagination);
   }
 
   async findBlogById(blogId: string) {
-    return await blogsRepository.findBlogById(blogId);
+    return await this.blogsRepository.findBlogById(blogId);
   }
 
   async createBlog(blog: BlogInputModel) {
@@ -27,7 +30,7 @@ export class BlogsService {
       isMembership: false,
     };
 
-    await blogsRepository.createBlog(newBlog);
+    await this.blogsRepository.createBlog(newBlog);
 
     return newBlog.id;
   }
@@ -42,13 +45,13 @@ export class BlogsService {
       websiteUrl,
     };
 
-    const updatedBlog = await blogsRepository.updateBlog(blogId, updateInfo);
+    const updatedBlog = await this.blogsRepository.updateBlog(blogId, updateInfo);
 
     return !!updatedBlog;
   }
 
   async deleteBlog(blogId: string) {
-    return await blogsRepository.deleteBlog(blogId);
+    return await this.blogsRepository.deleteBlog(blogId);
   }
 
   async createPostForBlog(blogId: string, postContent: BlogPostInputModel) {
@@ -71,7 +74,7 @@ export class BlogsService {
       shortDescription,
     };
 
-    const isCreated = await blogsRepository.createPostForBlog(postToCreate);
+    const isCreated = await this.blogsRepository.createPostForBlog(postToCreate);
 
     return isCreated ? postToCreate.id : null;
   }
@@ -83,8 +86,6 @@ export class BlogsService {
       return null;
     }
 
-    return await blogsRepository.getPostsByBlogId(blog, pagination);
+    return await this.blogsRepository.getPostsByBlogId(blog, pagination);
   }
 }
-
-export const blogsService = new BlogsService();

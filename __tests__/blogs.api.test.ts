@@ -1,10 +1,10 @@
 import { STATUS_HTTP } from '../src/shared/types';
 import { getAdminAllowedRequest } from './util/shared';
-import { BlogTestManager } from './util/BlogTestManager';
 import { ErrorResponse } from '../src/shared/types/Error';
 import { BlogInputModel, BlogViewModel } from '../src/domain/blogs/types/model/BlogModels';
 import mongoose from 'mongoose';
 import { envConfig } from '../src/shared/helpers/env-config';
+import { BlogTestManager } from '../src/composition-root';
 
 const blogInputCorrectData: BlogInputModel = {
   name: 'New blog',
