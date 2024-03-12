@@ -3,12 +3,15 @@ import { getRequest, SuperTestBodyResponse } from './shared';
 import { AuthModel } from '../../src/domain/auth/types/model/Auth';
 import { UserCreateModel } from '../../src/domain/users/types/model/UsersModels';
 import { Response } from 'supertest';
-import { jwtService } from '../../src/composition-root';
 import { injectable } from 'inversify';
 import { UserTestManagerClass } from './UserTestManager';
+import { JwtService } from '../../src/application/jwtService';
 @injectable()
 export class AuthTestManagerClass {
-  constructor(protected UserTestManager: UserTestManagerClass) {}
+  constructor(
+    protected UserTestManager: UserTestManagerClass,
+    protected jwtService: JwtService
+  ) {}
 
   async login(data: AuthModel, expectedStatus = STATUS_HTTP.OK_200) {
     const createResponse = await getRequest().post('/auth/login').send(data).expect(expectedStatus);
@@ -22,7 +25,7 @@ export class AuthTestManagerClass {
         accessToken: expect.any(String),
       });
 
-      const userPayload = await jwtService.getUserInfoByToken(refreshToken!);
+      const userPayload = await this.jwtService.getUserInfoByToken(refreshToken!);
       expect([userPayload?.login, userPayload?.email].includes(data.loginOrEmail)).toBe(true);
 
       return { createResponse: successfulCreateResponse, createdTokenResponse, refreshToken };

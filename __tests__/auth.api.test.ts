@@ -10,7 +10,7 @@ import { emailManager } from '../src/adapters/emailAdapter';
 import { delay } from './util/delay';
 import mongoose from 'mongoose';
 import { envConfig } from '../src/shared/helpers/env-config';
-import { AuthTestManager, UserTestManager } from '../src/composition-root';
+import { AuthTestManager, UserTestManager } from './index';
 
 const userCredentials1: UserCreateModel = { email: 'user1email@gm.com', login: 'User1', password: '123456789' };
 const userCredentials2: UserCreateModel = { email: 'user2email@gm.com', login: 'User2', password: '123456789' };

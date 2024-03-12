@@ -8,7 +8,7 @@ import { UserViewModel } from '../src/domain/users/types/model/UsersModels';
 import mongoose from 'mongoose';
 import { envConfig } from '../src/shared/helpers/env-config';
 import { LIKE_STATUS } from '../src/domain/likes/types/model/LikesModels';
-import { AuthTestManager, BlogTestManager, UserTestManager } from '../src/composition-root';
+import { AuthTestManager, BlogTestManager, UserTestManager } from './index';
 
 const blogInputCorrectData: BlogInputModel = {
   name: 'New blog',

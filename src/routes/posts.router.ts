@@ -11,31 +11,35 @@ import { PostsController } from '../controllers/posts-controller';
 export const postsRouter = express.Router();
 
 const postsController = container.get(PostsController);
-postsRouter.get('/', postsController.getPosts);
+postsRouter.get('/', postsController.getPosts.bind(postsController));
 
 postsRouter.post(
   '/',
   adminAuthCheckMiddleware,
   postInputModelValidation,
   validationCheckMiddleware,
-  postsController.createPost
+  postsController.createPost.bind(postsController)
 );
-postsRouter.get('/:postId', postsController.getPost);
-postsRouter.delete('/:postId', adminAuthCheckMiddleware, postsController.deletePost);
+postsRouter.get('/:postId', postsController.getPost.bind(postsController));
+postsRouter.delete('/:postId', adminAuthCheckMiddleware, postsController.deletePost.bind(postsController));
 postsRouter.put(
   '/:postId',
   adminAuthCheckMiddleware,
   postInputModelValidation,
   validationCheckMiddleware,
-  postsController.updatePost
+  postsController.updatePost.bind(postsController)
 );
 
-postsRouter.get('/:postId/comments', getUserInfoFromTokenWithoutAuthCheck, postsController.getPostComments);
+postsRouter.get(
+  '/:postId/comments',
+  getUserInfoFromTokenWithoutAuthCheck,
+  postsController.getPostComments.bind(postsController)
+);
 
 postsRouter.post(
   '/:postId/comments',
   userAuthCheckMiddleware,
   postCommentModelValidation,
   validationCheckMiddleware,
-  postsController.createPostComment
+  postsController.createPostComment.bind(postsController)
 );

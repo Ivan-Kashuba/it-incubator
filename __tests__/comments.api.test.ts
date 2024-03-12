@@ -9,7 +9,7 @@ import mongoose from 'mongoose';
 import { envConfig } from '../src/shared/helpers/env-config';
 import { LIKE_STATUS } from '../src/domain/likes/types/model/LikesModels';
 import { ErrorResponse } from '../src/shared/types/Error';
-import { AuthTestManager, BlogTestManager, PostTestManager } from '../src/composition-root';
+import { AuthTestManager, BlogTestManager, PostTestManager } from './index';
 
 const Symbols300Text =
   'Text 301 symbol Some text text Some text text Some text text Some text textSome text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text text Some text textt';

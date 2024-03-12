@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "concurrently \"npm run watch\" \"npm run dev\"",
-    "dev": "yarn nodemon --inspect dist/index.js",
+    "dev": "yarn nodemon -i dist/index.js",
     "watch": "tsc -w",
     "test": "jest --runInBand --forceExit \"__tests__/.*\\.test\\.ts\""
   },

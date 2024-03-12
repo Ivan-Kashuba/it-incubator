@@ -15,9 +15,9 @@ usersRouter.post(
   adminAuthCheckMiddleware,
   inputUserValidation,
   validationCheckMiddleware,
-  usersController.createUser
+  usersController.createUser.bind(usersController)
 );
 
-usersRouter.get('/', adminAuthCheckMiddleware, usersController.getUsers);
+usersRouter.get('/', adminAuthCheckMiddleware, usersController.getUsers.bind(usersController));
 
-usersRouter.delete('/:userId', adminAuthCheckMiddleware, usersController.deleteUser);
+usersRouter.delete('/:userId', adminAuthCheckMiddleware, usersController.deleteUser.bind(usersController));

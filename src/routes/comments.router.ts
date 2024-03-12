@@ -11,14 +11,18 @@ export const commentsRouter = express.Router();
 
 const commentsController = container.get(CommentsController);
 
-commentsRouter.get('/:commentId', getUserInfoFromTokenWithoutAuthCheck, commentsController.getComment);
+commentsRouter.get(
+  '/:commentId',
+  getUserInfoFromTokenWithoutAuthCheck,
+  commentsController.getComment.bind(commentsController)
+);
 
 commentsRouter.put(
   '/:commentId',
   userAuthCheckMiddleware,
   postCommentModelValidation,
   validationCheckMiddleware,
-  commentsController.updateComment
+  commentsController.updateComment.bind(commentsController)
 );
 
 commentsRouter.put(
@@ -26,7 +30,11 @@ commentsRouter.put(
   userAuthCheckMiddleware,
   likeCommentValidation,
   validationCheckMiddleware,
-  commentsController.updateCommentLikeStatus
+  commentsController.updateCommentLikeStatus.bind(commentsController)
 );
 
-commentsRouter.delete('/:commentId', userAuthCheckMiddleware, commentsController.deleteComment);
+commentsRouter.delete(
+  '/:commentId',
+  userAuthCheckMiddleware,
+  commentsController.deleteComment.bind(commentsController)
+);

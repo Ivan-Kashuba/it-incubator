@@ -53,10 +53,4 @@ container.bind(BlogTestManagerClass).to(BlogTestManagerClass);
 container.bind(PostTestManagerClass).to(PostTestManagerClass);
 container.bind(UserTestManagerClass).to(UserTestManagerClass);
 
-export const AuthTestManager = new AuthTestManagerClass(new UserTestManagerClass());
-export const BlogTestManager = new BlogTestManagerClass();
-export const PostTestManager = new PostTestManagerClass(new BlogsRepository());
-export const UserTestManager = new UserTestManagerClass();
-
 export const jwtService = new JwtService();
-export const authRepository = new AuthRepository();

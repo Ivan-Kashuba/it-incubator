@@ -10,22 +10,22 @@ import { BlogsController } from '../controllers/blogs-controller';
 export const blogRouter = express.Router();
 const blogsController = container.get(BlogsController);
 
-blogRouter.get('/', getUserInfoFromTokenWithoutAuthCheck, blogsController.getBlogs);
+blogRouter.get('/', getUserInfoFromTokenWithoutAuthCheck, blogsController.getBlogs.bind(blogsController));
 blogRouter.post(
   '/',
   adminAuthCheckMiddleware,
   blogInputModelValidation,
   validationCheckMiddleware,
-  blogsController.createBlog
+  blogsController.createBlog.bind(blogsController)
 );
-blogRouter.get('/:blogId', getUserInfoFromTokenWithoutAuthCheck, blogsController.getBlog);
-blogRouter.delete('/:blogId', adminAuthCheckMiddleware, blogsController.deleteBlog);
+blogRouter.get('/:blogId', getUserInfoFromTokenWithoutAuthCheck, blogsController.getBlog.bind(blogsController));
+blogRouter.delete('/:blogId', adminAuthCheckMiddleware, blogsController.deleteBlog.bind(blogsController));
 blogRouter.put(
   '/:blogId',
   adminAuthCheckMiddleware,
   blogInputModelValidation,
   validationCheckMiddleware,
-  blogsController.updateBlog
+  blogsController.updateBlog.bind(blogsController)
 );
 
 blogRouter.post(
@@ -33,7 +33,7 @@ blogRouter.post(
   adminAuthCheckMiddleware,
   blogPostInputModelValidation,
   validationCheckMiddleware,
-  blogsController.createPostForBlog
+  blogsController.createPostForBlog.bind(blogsController)
 );
 
-blogRouter.get('/:blogId/posts', blogsController.getBlogPosts);
+blogRouter.get('/:blogId/posts', blogsController.getBlogPosts.bind(blogsController));
