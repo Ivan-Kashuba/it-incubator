@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { DeviceSessionDTO } from '../../domain/auth/types/model/Auth';
+import { DeviceSessionDTO } from '../types/model/Auth';
 
 export const SessionSchema = new mongoose.Schema<DeviceSessionDTO>({
   userId: { type: String, require: true },

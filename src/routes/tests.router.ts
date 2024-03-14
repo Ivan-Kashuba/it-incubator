@@ -2,11 +2,11 @@ import express, { Request, Response } from 'express';
 import { localDb } from '../db/local-db';
 import { STATUS_HTTP } from '../shared/types';
 import { dataBase } from '../db/mongoDb';
-import { BlogModel } from '../db/schemes/blogs';
-import { PostModel } from '../db/schemes/posts';
-import { UserModel } from '../db/schemes/users';
-import { CommentModel } from '../db/schemes/comments';
-import { SessionModel } from '../db/schemes/sessions';
+import { BlogModel } from '../domain/blogs/scheme/blogs';
+import { PostModel } from '../domain/posts/scheme/posts';
+import { UserModel } from '../domain/users/scheme/users';
+import { CommentModel } from '../domain/comments/scheme/comments';
+import { SessionModel } from '../domain/auth/scheme/sessions';
 
 export const testRouter = express.Router();
 

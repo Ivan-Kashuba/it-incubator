@@ -1,5 +1,5 @@
 import { CommentDbModel } from '../domain/comments/types/model/CommentsModels';
-import { CommentModel } from '../db/schemes/comments';
+import { CommentModel } from '../domain/comments/scheme/comments';
 import { LIKE_STATUS } from '../domain/likes/types/model/LikesModels';
 import { injectable } from 'inversify';
 @injectable()

@@ -1,5 +1,5 @@
 import { DeviceSessionDTO } from '../domain/auth/types/model/Auth';
-import { SessionModel } from '../db/schemes/sessions';
+import { SessionModel } from '../domain/auth/scheme/sessions';
 import { injectable } from 'inversify';
 
 @injectable()

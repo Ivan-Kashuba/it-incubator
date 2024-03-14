@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { UserDbModel } from '../../domain/users/types/model/UsersModels';
+import { UserDbModel } from '../types/model/UsersModels';
 
 export const UsersSchema = new mongoose.Schema<UserDbModel>({
   id: { type: String, require: true },

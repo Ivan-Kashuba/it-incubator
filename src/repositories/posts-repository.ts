@@ -3,7 +3,7 @@ import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsens
 import { postWithBlogNameAggregate } from '../domain/posts/aggregations/postWithBlogNameAggregate';
 import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
-import { PostModel } from '../db/schemes/posts';
+import { PostModel } from '../domain/posts/scheme/posts';
 import { injectable } from 'inversify';
 @injectable()
 export class PostsRepository {

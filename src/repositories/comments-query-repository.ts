@@ -1,7 +1,7 @@
 import { CommentDbModel, CommentViewModel } from '../domain/comments/types/model/CommentsModels';
 import { PaginationPayload } from '../shared/types/Pagination';
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
-import { CommentModel } from '../db/schemes/comments';
+import { CommentModel } from '../domain/comments/scheme/comments';
 import { LIKE_STATUS } from '../domain/likes/types/model/LikesModels';
 import { injectable } from 'inversify';
 @injectable()

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import { CommentDbModel } from '../../domain/comments/types/model/CommentsModels';
-import { LIKE_STATUS, LikeDbModel } from '../../domain/likes/types/model/LikesModels';
+import { CommentDbModel } from '../types/model/CommentsModels';
+import { LIKE_STATUS, LikeDbModel } from '../../likes/types/model/LikesModels';
 
 const LikesSchema = new mongoose.Schema<LikeDbModel>({
   userId: { type: String, require: true },

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { BlogDBModel } from '../../domain/blogs/types/model/BlogModels';
+import { BlogDBModel } from '../types/model/BlogModels';
 
 export const BlogSchema = new mongoose.Schema<BlogDBModel>({
   id: { type: String, require: true },

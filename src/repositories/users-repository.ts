@@ -3,7 +3,7 @@ import { PaginationPayload } from '../shared/types/Pagination';
 import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsensitiveCaseSearchRegexString';
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
 import { mapDbUsersToViewUsers } from '../domain/users/mappers/userMapers';
-import { UserModel } from '../db/schemes/users';
+import { UserModel } from '../domain/users/scheme/users';
 import { injectable } from 'inversify';
 @injectable()
 export class UsersRepository {

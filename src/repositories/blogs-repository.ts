@@ -3,8 +3,8 @@ import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsens
 import { PostDbModel, PostViewModel } from '../domain/posts/types/model/PostModels';
 import { PaginationPayload, WithPagination } from '../shared/types/Pagination';
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
-import { BlogModel } from '../db/schemes/blogs';
-import { PostModel } from '../db/schemes/posts';
+import { BlogModel } from '../domain/blogs/scheme/blogs';
+import { PostModel } from '../domain/posts/scheme/posts';
 import { injectable } from 'inversify';
 
 @injectable()
