@@ -79,14 +79,4 @@ export class BlogsService {
 
     return isCreated ? postToCreate.id : null;
   }
-
-  async getPostsByBlogId(blogId: string, pagination: PaginationPayload<PostViewModel>) {
-    const blog = await this.findBlogById(blogId);
-
-    if (!blog) {
-      return null;
-    }
-
-    return await this.blogsRepository.getPostsByBlogId(blog, pagination);
-  }
 }

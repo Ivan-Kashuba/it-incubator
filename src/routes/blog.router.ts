@@ -36,4 +36,8 @@ blogRouter.post(
   blogsController.createPostForBlog.bind(blogsController)
 );
 
-blogRouter.get('/:blogId/posts', blogsController.getBlogPosts.bind(blogsController));
+blogRouter.get(
+  '/:blogId/posts',
+  getUserInfoFromTokenWithoutAuthCheck,
+  blogsController.getBlogPosts.bind(blogsController)
+);

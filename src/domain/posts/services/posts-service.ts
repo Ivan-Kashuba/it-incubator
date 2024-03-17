@@ -15,17 +15,6 @@ export class PostsService {
     protected usersRepository: UsersRepository
   ) {}
 
-  async findPosts(
-    title: string | null,
-    pagination: PaginationPayload<PostViewModel>
-  ): Promise<WithPagination<PostViewModel>> {
-    return await this.postsQueryRepository.findPosts(title, pagination);
-  }
-
-  async findPostById(postId: string) {
-    return await this.postsQueryRepository.findPostById(postId);
-  }
-
   async createPost(postInfo: PostInputModel) {
     const { content, shortDescription, title, blogId } = postInfo;
 

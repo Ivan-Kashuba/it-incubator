@@ -94,11 +94,12 @@ export class BlogsController {
     res: Response<PostViewModel>
   ) {
     const blogId = req.params.blogId;
+    const userId = req?.user?.userId;
 
     const createdPostId = await this.blogsService.createPostForBlog(blogId, req.body);
 
     if (createdPostId) {
-      const createdPost = await this.postsQueryRepository.findPostById(createdPostId);
+      const createdPost = await this.postsQueryRepository.findPostById(createdPostId, userId);
       res.status(201).send(createdPost);
     } else {
       res.sendStatus(404);
@@ -110,9 +111,17 @@ export class BlogsController {
     res: Response<WithPagination<PostViewModel>>
   ) {
     const blogId = req.params.blogId;
+    const userId = req?.user?.userId;
+
+    const blog = (await this.blogsRepository.findBlogById(blogId)) as BlogViewModel;
+
+    if (!blog) {
+      res.sendStatus(404);
+    }
+
     const pagination: PaginationPayload<PostViewModel> = validatePayloadPagination(req.query, 'createdAt');
 
-    const posts = await this.blogsService.getPostsByBlogId(blogId, pagination);
+    const posts = await this.blogsRepository.getPostsByBlogId(blog, pagination, userId);
 
     if (posts) {
       res.status(200).send(posts);

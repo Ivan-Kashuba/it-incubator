@@ -6,9 +6,13 @@ import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '.
 import { BlogModel } from '../domain/blogs/scheme/blogs';
 import { PostModel } from '../domain/posts/scheme/posts';
 import { injectable } from 'inversify';
+import { LIKE_STATUS } from '../domain/likes/types/model/LikesModels';
+import { PostModelAfterAggregation, PostsQueryRepository } from './posts-query-repository';
 
 @injectable()
 export class BlogsRepository {
+  constructor(protected postsQueryRepository: PostsQueryRepository) {}
+
   async findBlogs(
     blogName: string | null,
     pagination: PaginationPayload<BlogViewModel>
@@ -62,7 +66,7 @@ export class BlogsRepository {
     return !!creatingResponse._id;
   }
 
-  async getPostsByBlogId(blog: BlogViewModel, pagination: PaginationPayload<PostViewModel>) {
+  async getPostsByBlogId(blog: BlogViewModel, pagination: PaginationPayload<PostViewModel>, userId?: string) {
     const { pageNumber, pageSize, sortBy, sortDirection } = pagination;
 
     const filter = { blogId: blog.id };
@@ -72,19 +76,17 @@ export class BlogsRepository {
     const postsFromBd = await PostModel.find(filter)
       .sort({ [sortBy]: getSortDirectionMongoValue(sortDirection) })
       .skip(getSkip(pageNumber, pageSize))
-      .limit(pageSize);
+      .limit(pageSize)
+      .lean();
 
-    const viewPosts: PostViewModel[] = postsFromBd.map((post) => {
-      return {
-        blogId: blog.id,
-        blogName: blog.name,
-        content: post.content,
-        shortDescription: post.shortDescription,
-        title: post.title,
-        createdAt: post.createdAt,
-        id: post.id,
-      };
-    });
+    const postDbModelWithBlogName: PostModelAfterAggregation[] = postsFromBd.map((post) => ({
+      blogName: blog.name,
+      ...post,
+    }));
+
+    const viewPosts: PostViewModel[] = postDbModelWithBlogName.map((post) =>
+      this.postsQueryRepository._mapDbPostModelToViewModel(post, userId)
+    );
 
     return createPaginationResponse<PostViewModel>(pagination, viewPosts, totalCount);
   }

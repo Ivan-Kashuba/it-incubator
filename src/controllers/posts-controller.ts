@@ -33,20 +33,22 @@ export class PostsController {
     req: RequestWithQuery<{ title?: string } & Partial<PaginationPayload<PostViewModel>>>,
     res: Response<WithPagination<PostViewModel>>
   ) {
+    const userId = req.user.userId;
     const pagination: PaginationPayload<PostViewModel> = validatePayloadPagination(req.query, 'createdAt');
 
     const titleToFind = req?.query?.title || null;
 
-    const foundedPost = await this.postsService.findPosts(titleToFind, pagination);
+    const foundedPost = await this.postsQueryRepository.findPosts(titleToFind, pagination, userId);
 
     res.status(STATUS_HTTP.OK_200).send(foundedPost);
   }
 
   async createPost(req: RequestWithBody<PostInputModel>, res: Response<PostViewModel>) {
+    const userId = req?.user?.userId;
     const createdPostId = await this.postsService.createPost(req.body);
 
     if (createdPostId) {
-      const createdPost = await this.postsQueryRepository.findPostById(createdPostId);
+      const createdPost = await this.postsQueryRepository.findPostById(createdPostId, userId);
       res.status(STATUS_HTTP.CREATED_201).send(createdPost);
       return;
     }
@@ -56,8 +58,9 @@ export class PostsController {
 
   async getPost(req: RequestWithParams<{ postId: string }>, res: Response<PostViewModel>) {
     const postId = req.params.postId;
+    const userId = req?.user?.userId;
 
-    const foundedPost = await this.postsService.findPostById(postId);
+    const foundedPost = await this.postsQueryRepository.findPostById(postId, userId);
 
     if (!foundedPost) {
       res.sendStatus(STATUS_HTTP.NOT_FOUND_404);

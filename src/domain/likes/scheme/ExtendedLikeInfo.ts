@@ -5,6 +5,7 @@ const ExtendedLikeSchema = new mongoose.Schema<ExtendedLikeDbModel>({
   userId: { type: String, require: true },
   status: { type: String, enum: LIKE_STATUS },
   addedAt: { type: String, require: true, default: new Date().toISOString },
+  firstLikeDate: { type: String, require: true, default: null },
   userLogin: { type: String, require: true },
 });
 

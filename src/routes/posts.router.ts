@@ -13,7 +13,7 @@ import { commentsRouter } from './comments.router';
 export const postsRouter = express.Router();
 
 const postsController = container.get(PostsController);
-postsRouter.get('/', postsController.getPosts.bind(postsController));
+postsRouter.get('/', getUserInfoFromTokenWithoutAuthCheck, postsController.getPosts.bind(postsController));
 
 postsRouter.post(
   '/',
@@ -22,7 +22,7 @@ postsRouter.post(
   validationCheckMiddleware,
   postsController.createPost.bind(postsController)
 );
-postsRouter.get('/:postId', postsController.getPost.bind(postsController));
+postsRouter.get('/:postId', getUserInfoFromTokenWithoutAuthCheck, postsController.getPost.bind(postsController));
 postsRouter.delete('/:postId', adminAuthCheckMiddleware, postsController.deletePost.bind(postsController));
 postsRouter.put(
   '/:postId',

@@ -23,6 +23,7 @@ export const postWithBlogNameAggregate = (match?: any): PipelineStage[] => {
         shortDescription: 1,
         blogId: 1,
         createdAt: 1,
+        extendedLikesInfo: 1,
         blogName: '$blogInfo.name',
       },
     },
