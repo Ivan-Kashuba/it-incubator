@@ -1,6 +1,7 @@
 import { checkSchema, Schema } from 'express-validator';
 import { emailValidationSchema } from '../../../shared/validation/emailValidationSchema';
-import { usersRepository } from '../../../repositories/users-repository';
+
+import { usersRepository } from '../../../composition-root';
 
 const resendEmailForRegistrationConfirmationValidationSchema: Schema = {
   email: {

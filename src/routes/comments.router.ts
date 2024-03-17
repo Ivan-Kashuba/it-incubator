@@ -3,7 +3,7 @@ import { userAuthCheckMiddleware } from '../middlewares/userAuthCheckMiddleware'
 import { postCommentModelValidation } from '../domain/comments/validation/postCommentModelValidation';
 import { validationCheckMiddleware } from '../middlewares/validationCheckMiddleware';
 import { getUserInfoFromTokenWithoutAuthCheck } from '../middlewares/getUserInfoFromTokenWithoutAuthCheck';
-import { likeCommentValidation } from '../domain/comments/validation/likeCommentValidationSchema';
+import { inputLikeModelValidation } from '../domain/comments/validation/inputLikeValidationSchema';
 import { container } from '../composition-root';
 import { CommentsController } from '../controllers/comments-controller';
 
@@ -28,7 +28,7 @@ commentsRouter.put(
 commentsRouter.put(
   '/:commentId/like-status',
   userAuthCheckMiddleware,
-  likeCommentValidation,
+  inputLikeModelValidation,
   validationCheckMiddleware,
   commentsController.updateCommentLikeStatus.bind(commentsController)
 );

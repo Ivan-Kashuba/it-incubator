@@ -1,6 +1,6 @@
 import { checkSchema, Schema } from 'express-validator';
-import { usersRepository } from '../../../repositories/users-repository';
 import { isBefore } from 'date-fns';
+import { usersRepository } from '../../../composition-root';
 
 const confirmationByRegistrationCodeValidationSchema: Schema = {
   code: {

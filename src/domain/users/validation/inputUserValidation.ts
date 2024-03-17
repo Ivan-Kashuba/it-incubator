@@ -2,7 +2,8 @@ import { checkSchema, Schema } from 'express-validator';
 import { userPasswordValidationSchema } from '../../../shared/validation/userPasswordValidationSchema';
 import { emailValidationSchema } from '../../../shared/validation/emailValidationSchema';
 import { userLoginValidationSchema } from '../../../shared/validation/userLoginValidationSchema';
-import { usersRepository } from '../../../repositories/users-repository';
+
+import { usersRepository } from '../../../composition-root';
 
 const inputUserValidationSchema: Schema = {
   login: {

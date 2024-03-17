@@ -1,3 +1,6 @@
+import { ExtendedLikesDbModel, LIKE_STATUS } from '../../../likes/types/model/LikesModels';
+import { Model } from 'mongoose';
+
 export interface PostDbModel {
   _id?: string;
   id: string;
@@ -6,6 +9,7 @@ export interface PostDbModel {
   content: string;
   blogId: string;
   createdAt: string;
+  extendedLikesInfo: ExtendedLikesDbModel;
 }
 
 export interface PostViewModel {
@@ -24,3 +28,9 @@ export type PostInputModel = {
   content: string;
   blogId: string;
 };
+
+export type PostModelMethods = {
+  like(likeStatus: LIKE_STATUS, userId: string, login: string): Promise<void>;
+};
+
+export type PostSchemeModel = Model<PostDbModel, {}, PostModelMethods> & PostModelMethods;

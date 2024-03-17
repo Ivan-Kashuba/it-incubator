@@ -1,6 +1,6 @@
 import { LIKE_STATUS } from '../../domain/likes/types/model/LikesModels';
 
-export const commentLikeValidationSchema = {
+export const inputLikeValidationSchema = {
   custom: {
     options: async (likeStatus: LIKE_STATUS) => {
       if (!likeStatus || !Object.values(LIKE_STATUS).includes(likeStatus)) {

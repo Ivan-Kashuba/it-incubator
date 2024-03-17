@@ -72,6 +72,7 @@ export class BlogsService {
       createdAt: new Date().toISOString(),
       content,
       shortDescription,
+      extendedLikesInfo: { extendedLikes: [], likesCount: 0, dislikesCount: 0 },
     };
 
     const isCreated = await this.blogsRepository.createPostForBlog(postToCreate);

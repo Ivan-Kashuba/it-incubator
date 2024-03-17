@@ -15,13 +15,15 @@ import { PostViewModel } from '../domain/posts/types/model/PostModels';
 import { injectable } from 'inversify';
 import { BlogsRepository } from '../repositories/blogs-repository';
 import { PostsRepository } from '../repositories/posts-repository';
+import { PostsQueryRepository } from '../repositories/posts-query-repository';
 
 @injectable()
 export class BlogsController {
   constructor(
     protected blogsRepository: BlogsRepository,
     protected blogsService: BlogsService,
-    protected postsRepository: PostsRepository
+    protected postsRepository: PostsRepository,
+    protected postsQueryRepository: PostsQueryRepository
   ) {}
   async getBlogs(
     req: RequestWithQuery<{ searchNameTerm?: string | null } & Partial<PaginationPayload<BlogViewModel>>>,
@@ -96,7 +98,7 @@ export class BlogsController {
     const createdPostId = await this.blogsService.createPostForBlog(blogId, req.body);
 
     if (createdPostId) {
-      const createdPost = await this.postsRepository.findPostById(createdPostId);
+      const createdPost = await this.postsQueryRepository.findPostById(createdPostId);
       res.status(201).send(createdPost);
     } else {
       res.sendStatus(404);

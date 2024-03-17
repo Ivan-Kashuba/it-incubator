@@ -1,11 +1,6 @@
 import mongoose from 'mongoose';
 import { CommentDbModel } from '../types/model/CommentsModels';
-import { LIKE_STATUS, LikeDbModel } from '../../likes/types/model/LikesModels';
-
-const LikesSchema = new mongoose.Schema<LikeDbModel>({
-  userId: { type: String, require: true },
-  status: { type: String, enum: LIKE_STATUS },
-});
+import { LikesSchema } from '../../likes/scheme/Likes';
 
 export const CommentSchema = new mongoose.Schema<CommentDbModel>({
   id: { type: String, require: true },

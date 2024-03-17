@@ -23,6 +23,7 @@ import { AuthTestManagerClass } from '../__tests__/util/AuthTestManager';
 import { BlogTestManagerClass } from '../__tests__/util/BlogTestManager';
 import { PostTestManagerClass } from '../__tests__/util/PostsTestManager';
 import { UserTestManagerClass } from '../__tests__/util/UserTestManager';
+import { PostsQueryRepository } from './repositories/posts-query-repository';
 
 export const container = new Container();
 
@@ -46,6 +47,7 @@ container.bind(BlogsRepository).to(BlogsRepository);
 container.bind(CommentsRepository).to(CommentsRepository);
 container.bind(CommentsQueryRepository).to(CommentsQueryRepository);
 container.bind(PostsRepository).to(PostsRepository);
+container.bind(PostsQueryRepository).to(PostsQueryRepository);
 container.bind(SecurityQueryRepository).to(SecurityQueryRepository);
 
 container.bind(AuthTestManagerClass).to(AuthTestManagerClass);
@@ -53,4 +55,5 @@ container.bind(BlogTestManagerClass).to(BlogTestManagerClass);
 container.bind(PostTestManagerClass).to(PostTestManagerClass);
 container.bind(UserTestManagerClass).to(UserTestManagerClass);
 
-export const jwtService = new JwtService();
+export const jwtService = container.get(JwtService);
+export const usersRepository = container.get(UsersRepository);

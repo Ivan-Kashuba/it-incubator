@@ -3,7 +3,6 @@ import { UserCreateModel, UserViewModel } from '../domain/users/types/model/User
 import { Response } from 'express';
 import { UsersService } from '../domain/users/services/users-service';
 import { UsersRepository } from '../repositories/users-repository';
-import { mapDbUserToViewUser } from '../domain/users/mappers/userMapers';
 import { PaginationPayload } from '../shared/types/Pagination';
 import { validatePayloadPagination } from '../shared/helpers/pagination';
 import { injectable } from 'inversify';
@@ -19,7 +18,7 @@ export class UsersController {
 
     if (createdUserId) {
       const createdUser = await this.usersRepository.findUserByLoginOrEmail(req.body.login);
-      const userViewModel = mapDbUserToViewUser(createdUser!);
+      const userViewModel = this.usersRepository._mapDbUserToViewUser(createdUser!);
       res.status(STATUS_HTTP.CREATED_201).send(userViewModel);
       return;
     }

@@ -39,6 +39,7 @@ export const localDb: DataBase = {
       shortDescription: 'Description',
       blogId: '1',
       createdAt: '2024-01-13T16:20:58.068Z',
+      extendedLikesInfo: { extendedLikes: [], likesCount: 0, dislikesCount: 0 },
     },
     {
       id: '2',
@@ -47,6 +48,7 @@ export const localDb: DataBase = {
       shortDescription: 'Description1',
       blogId: '2',
       createdAt: '2024-01-13T16:20:58.068Z',
+      extendedLikesInfo: { extendedLikes: [], likesCount: 0, dislikesCount: 0 },
     },
     {
       id: '3',
@@ -55,6 +57,7 @@ export const localDb: DataBase = {
       shortDescription: 'Description2',
       blogId: '3',
       createdAt: '2024-01-13T16:20:58.068Z',
+      extendedLikesInfo: { extendedLikes: [], likesCount: 0, dislikesCount: 0 },
     },
   ],
 };

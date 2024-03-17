@@ -2,9 +2,9 @@ import { UserDbModel, UserViewModel } from '../domain/users/types/model/UsersMod
 import { PaginationPayload } from '../shared/types/Pagination';
 import { getInsensitiveCaseSearchRegexString } from '../shared/helpers/getInsensitiveCaseSearchRegexString';
 import { createPaginationResponse, getSkip, getSortDirectionMongoValue } from '../shared/helpers/pagination';
-import { mapDbUsersToViewUsers } from '../domain/users/mappers/userMapers';
 import { UserModel } from '../domain/users/scheme/users';
 import { injectable } from 'inversify';
+
 @injectable()
 export class UsersRepository {
   async createUser(user: UserDbModel) {
@@ -35,9 +35,10 @@ export class UsersRepository {
     const foundedUsers = await UserModel.find(filters, { projection: { _id: 0 } })
       .sort({ [`accountData.${sortBy}`]: getSortDirectionMongoValue(sortDirection) })
       .skip(getSkip(pageNumber, pageSize))
-      .limit(pagination.pageSize);
+      .limit(pagination.pageSize)
+      .lean();
 
-    return createPaginationResponse<UserViewModel>(pagination, mapDbUsersToViewUsers(foundedUsers), totalCount);
+    return createPaginationResponse<UserViewModel>(pagination, this._mapDbUsersToViewUsers(foundedUsers), totalCount);
   }
 
   async deleteUser(userId: string) {
@@ -50,6 +51,10 @@ export class UsersRepository {
     return UserModel.findOne({
       $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }],
     }).lean();
+  }
+
+  async findUserById(userId: string) {
+    return UserModel.findOne({ id: userId });
   }
 
   async updateUserByLoginOrEmail(loginOrEmail: string, updateInfo: Partial<UserDbModel>) {
@@ -72,6 +77,19 @@ export class UsersRepository {
   async findUserByPasswordRecoveryCode(code: string) {
     return UserModel.findOne({ 'passwordRecovery.confirmationCode': code }).lean();
   }
-}
 
-export const usersRepository = new UsersRepository();
+  _mapDbUserToViewUser(dbUser: UserDbModel) {
+    const viewUser: UserViewModel = {
+      id: dbUser.id,
+      createdAt: dbUser.accountData.createdAt,
+      email: dbUser.accountData.email,
+      login: dbUser.accountData.login,
+    };
+
+    return viewUser;
+  }
+
+  _mapDbUsersToViewUsers(dbUsers: UserDbModel[]) {
+    return dbUsers.map(this._mapDbUserToViewUser);
+  }
+}

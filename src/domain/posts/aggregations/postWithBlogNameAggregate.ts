@@ -1,4 +1,4 @@
-import { FilterQuery, PipelineStage } from 'mongoose';
+import { PipelineStage } from 'mongoose';
 
 export const postWithBlogNameAggregate = (match?: any): PipelineStage[] => {
   return [

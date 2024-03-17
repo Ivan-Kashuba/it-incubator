@@ -7,6 +7,8 @@ import { postCommentModelValidation } from '../domain/comments/validation/postCo
 import { getUserInfoFromTokenWithoutAuthCheck } from '../middlewares/getUserInfoFromTokenWithoutAuthCheck';
 import { container } from '../composition-root';
 import { PostsController } from '../controllers/posts-controller';
+import { inputLikeModelValidation } from '../domain/comments/validation/inputLikeValidationSchema';
+import { commentsRouter } from './comments.router';
 
 export const postsRouter = express.Router();
 
@@ -42,4 +44,12 @@ postsRouter.post(
   postCommentModelValidation,
   validationCheckMiddleware,
   postsController.createPostComment.bind(postsController)
+);
+
+postsRouter.put(
+  '/:postId/like-status',
+  userAuthCheckMiddleware,
+  inputLikeModelValidation,
+  validationCheckMiddleware,
+  postsController.updatePostLikeStatus.bind(postsController)
 );

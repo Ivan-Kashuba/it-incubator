@@ -16,12 +16,16 @@ import { CommentInputModel, CommentViewModel } from '../domain/comments/types/mo
 import { CommentsQueryRepository } from '../repositories/comments-query-repository';
 import { CommentService } from '../domain/comments/services/comment-service';
 import { injectable } from 'inversify';
+import { LikeInputModel } from '../domain/likes/types/model/LikesModels';
+import { ResultService } from '../shared/helpers/resultObject';
+import { PostsQueryRepository } from '../repositories/posts-query-repository';
 
 @injectable()
 export class PostsController {
   constructor(
     protected postsService: PostsService,
     protected postsRepository: PostsRepository,
+    protected postsQueryRepository: PostsQueryRepository,
     protected commentsQueryRepository: CommentsQueryRepository,
     protected commentService: CommentService
   ) {}
@@ -42,7 +46,7 @@ export class PostsController {
     const createdPostId = await this.postsService.createPost(req.body);
 
     if (createdPostId) {
-      const createdPost = await this.postsRepository.findPostById(createdPostId);
+      const createdPost = await this.postsQueryRepository.findPostById(createdPostId);
       res.status(STATUS_HTTP.CREATED_201).send(createdPost);
       return;
     }
@@ -135,5 +139,20 @@ export class PostsController {
     }
 
     res.sendStatus(STATUS_HTTP.NOT_IMPLEMENTED_501);
+  }
+
+  async updatePostLikeStatus(
+    req: RequestWithParamsAndBody<{ postId: string }, LikeInputModel>,
+    res: Response<CommentViewModel>
+  ) {
+    const postId = req.params.postId;
+    const userId = req?.user?.userId;
+    const { likeStatus } = req.body;
+
+    const serviceResult = await this.postsService.likePost(postId, likeStatus, userId);
+
+    const result = ResultService.mapResultToHttpResponse(serviceResult);
+
+    res.status(result.statusCode).send(result.body);
   }
 }
