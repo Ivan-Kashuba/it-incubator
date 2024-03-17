@@ -61,7 +61,8 @@ export class PostsQueryRepository {
         };
 
         return newestLike;
-      });
+      })
+      .sort((like_a, like_b) => new Date(like_b.addedAt).getTime() - new Date(like_a.addedAt).getTime());
 
     const postViewModel: PostViewModel = {
       ...postWithDbExtendedLikesInfo,
