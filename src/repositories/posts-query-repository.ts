@@ -64,7 +64,13 @@ export class PostsQueryRepository {
       });
 
     const postViewModel: PostViewModel = {
-      ...postWithDbExtendedLikesInfo,
+      title: postWithDbExtendedLikesInfo.title,
+      createdAt: postWithDbExtendedLikesInfo.createdAt,
+      content: postWithDbExtendedLikesInfo.content,
+      shortDescription: postWithDbExtendedLikesInfo.shortDescription,
+      blogId: postWithDbExtendedLikesInfo.blogId,
+      id: postWithDbExtendedLikesInfo.id,
+      blogName: postWithDbExtendedLikesInfo.blogName,
       extendedLikesInfo: {
         likesCount: postWithDbExtendedLikesInfo.extendedLikesInfo.likesCount,
         dislikesCount: postWithDbExtendedLikesInfo.extendedLikesInfo.dislikesCount,
