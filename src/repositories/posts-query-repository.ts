@@ -51,7 +51,7 @@ export class PostsQueryRepository {
 
     const newestLikes = postWithDbExtendedLikesInfo.extendedLikesInfo.extendedLikes
       .filter((like) => like.status === LIKE_STATUS.Like)
-      .sort((like_a, like_b) => new Date(like_a.firstLikeDate!).getTime() - new Date(like_b.firstLikeDate!).getTime())
+      .sort((like_a, like_b) => new Date(like_b.firstLikeDate!).getTime() - new Date(like_a.firstLikeDate!).getTime())
       .slice(0, 3)
       .map((like) => {
         const newestLike: NewestLikeViewModel = {
@@ -61,8 +61,7 @@ export class PostsQueryRepository {
         };
 
         return newestLike;
-      })
-      .sort((like_a, like_b) => new Date(like_b.addedAt).getTime() - new Date(like_a.addedAt).getTime());
+      });
 
     const postViewModel: PostViewModel = {
       ...postWithDbExtendedLikesInfo,
