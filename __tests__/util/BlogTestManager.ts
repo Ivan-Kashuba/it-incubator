@@ -5,6 +5,7 @@ import { ISO_STRING_REGEX } from '../../src/shared/helpers/regex';
 import { BlogInputModel, BlogPostInputModel, BlogViewModel } from '../../src/domain/blogs/types/model/BlogModels';
 import { PostViewModel } from '../../src/domain/posts/types/model/PostModels';
 import { injectable } from 'inversify';
+import { LIKE_STATUS } from '../../src/domain/likes/types/model/LikesModels';
 @injectable()
 export class BlogTestManagerClass {
   async createBlog(data: BlogInputModel, expectedStatus = STATUS_HTTP.CREATED_201) {
@@ -46,6 +47,12 @@ export class BlogTestManagerClass {
         shortDescription: data.shortDescription,
         blogName: blog.name,
         id: expect.any(String),
+        extendedLikesInfo: {
+          likesCount: 0,
+          dislikesCount: 0,
+          myStatus: LIKE_STATUS.None,
+          newestLikes: [],
+        },
       });
 
       return { createResponse: successfulCreateResponse, createdPost: createdPost };

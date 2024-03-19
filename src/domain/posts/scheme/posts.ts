@@ -34,7 +34,6 @@ PostSchema.method('like', async function like(likeStatus: LIKE_STATUS, userId: s
       extendedLikesInfo.firstLikeDate = new Date().toISOString();
     }
   } else {
-    console.log('+++');
     that.extendedLikesInfo.extendedLikes.push({
       status: likeStatus,
       userId,

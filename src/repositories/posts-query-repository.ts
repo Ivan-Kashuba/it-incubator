@@ -41,7 +41,7 @@ export class PostsQueryRepository {
       await PostModel.aggregate(postWithBlogNameAggregate({ id: postId }))
     )[0] as unknown as PostModelAfterAggregation;
 
-    return this._mapDbPostModelToViewModel(postWithDbExtendedLikesInfo, userId);
+    return postWithDbExtendedLikesInfo ? this._mapDbPostModelToViewModel(postWithDbExtendedLikesInfo, userId) : null;
   }
 
   _mapDbPostModelToViewModel(postWithDbExtendedLikesInfo: PostModelAfterAggregation, userId?: string) {

@@ -29,6 +29,12 @@ export class PostTestManagerClass {
         shortDescription: data.shortDescription,
         createdAt: expect.stringMatching(ISO_STRING_REGEX),
         blogId: data.blogId,
+        extendedLikesInfo: {
+          likesCount: 0,
+          dislikesCount: 0,
+          myStatus: LIKE_STATUS.None,
+          newestLikes: [],
+        },
       });
 
       return { createResponse: successfulCreateResponse, createdPost };

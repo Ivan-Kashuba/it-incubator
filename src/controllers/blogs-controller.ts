@@ -100,7 +100,7 @@ export class BlogsController {
 
     if (createdPostId) {
       const createdPost = await this.postsQueryRepository.findPostById(createdPostId, userId);
-      res.status(201).send(createdPost);
+      res.status(201).send(createdPost!);
     } else {
       res.sendStatus(404);
     }

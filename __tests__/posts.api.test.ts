@@ -8,7 +8,8 @@ import { UserViewModel } from '../src/domain/users/types/model/UsersModels';
 import mongoose from 'mongoose';
 import { envConfig } from '../src/shared/helpers/env-config';
 import { LIKE_STATUS } from '../src/domain/likes/types/model/LikesModels';
-import { AuthTestManager, BlogTestManager, UserTestManager } from './index';
+import { AuthTestManager, BlogTestManager, PostTestManager, UserTestManager } from './index';
+import { defaultUsersInputData } from './util/UserTestManager';
 
 const blogInputCorrectData: BlogInputModel = {
   name: 'New blog',
@@ -402,6 +403,128 @@ describe('Posts', () => {
       pageSize: 10,
       totalCount: 2,
       items: [getExpectedComment(sentComments[1]), getExpectedComment(sentComments[0])],
+    });
+  });
+  it('Like posts works check', async () => {
+    const { accessToken: token1, createdUser: user1 } = await AuthTestManager.createUserAndLogin(
+      defaultUsersInputData[0]
+    );
+    const { accessToken: token2, createdUser: user2 } = await AuthTestManager.createUserAndLogin(
+      defaultUsersInputData[1]
+    );
+
+    const { createdBlog } = await BlogTestManager.createBlog(blogInputCorrectData);
+
+    const { createdPost } = await BlogTestManager.createPostForBlog(createdBlog!, {
+      content: 'Post 1 Content',
+      title: 'Post 1 Title',
+      shortDescription: 'Description',
+    });
+
+    const expectedErrorBadLikeStatus: ErrorResponse = {
+      errorsMessages: [
+        {
+          message: 'Bad like status enum value',
+          field: 'likeStatus',
+        },
+      ],
+    };
+
+    await getUserAuthorisedRequest(token1)
+      .put(`/posts/${createdPost!.id}/like-status`)
+      .send({ likeStatus: 'Invalid enum value' })
+      .expect(STATUS_HTTP.BAD_REQUEST_400, expectedErrorBadLikeStatus);
+
+    const expectedErrorNoFoundCommentForLike: ErrorResponse = {
+      errorsMessages: [
+        {
+          field: 'postId',
+          message: 'PostId is not exist',
+        },
+      ],
+    };
+
+    await getUserAuthorisedRequest(token1)
+      .put(`/posts/-999999999999999999999/like-status`)
+      .send({ likeStatus: LIKE_STATUS.Like })
+      .expect(STATUS_HTTP.NOT_FOUND_404, expectedErrorNoFoundCommentForLike);
+
+    await getUserAuthorisedRequest(token1)
+      .put(`/posts/${createdPost!.id}/like-status`)
+      .send({ likeStatus: LIKE_STATUS.Like })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    const postByUser1ViewResponse = await getUserAuthorisedRequest(token1)
+      .get(`/posts/${createdPost!.id}`)
+      .expect(STATUS_HTTP.OK_200);
+
+    const postByUser2ViewResponse = await getUserAuthorisedRequest(token2)
+      .get(`/posts/${createdPost!.id}`)
+      .expect(STATUS_HTTP.OK_200);
+
+    expect(postByUser1ViewResponse.body.extendedLikesInfo).toEqual({
+      likesCount: 1,
+      dislikesCount: 0,
+      myStatus: LIKE_STATUS.Like,
+      newestLikes: [{ addedAt: expect.stringMatching(ISO_STRING_REGEX), userId: user1!.id, login: user1!.login }],
+    });
+
+    expect(postByUser2ViewResponse.body.extendedLikesInfo).toEqual({
+      likesCount: 1,
+      dislikesCount: 0,
+      myStatus: LIKE_STATUS.None,
+      newestLikes: [{ addedAt: expect.stringMatching(ISO_STRING_REGEX), userId: user1!.id, login: user1!.login }],
+    });
+
+    await getUserAuthorisedRequest(token2)
+      .put(`/posts/${createdPost!.id}/like-status`)
+      .send({ likeStatus: LIKE_STATUS.Like })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    const commentByUser2ViewAfterOwnLikeResponse = await getUserAuthorisedRequest(token2)
+      .get(`/posts/${createdPost!.id}`)
+      .expect(STATUS_HTTP.OK_200);
+
+    expect(commentByUser2ViewAfterOwnLikeResponse.body.extendedLikesInfo).toEqual({
+      likesCount: 2,
+      dislikesCount: 0,
+      myStatus: LIKE_STATUS.Like,
+      newestLikes: [
+        { addedAt: expect.stringMatching(ISO_STRING_REGEX), userId: user2!.id, login: user2!.login },
+        { addedAt: expect.stringMatching(ISO_STRING_REGEX), userId: user1!.id, login: user1!.login },
+      ],
+    });
+
+    await getUserAuthorisedRequest(token2)
+      .put(`/posts/${createdPost!.id}/like-status`)
+      .send({ likeStatus: LIKE_STATUS.Dislike })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    const postByUser2ViewAfterDislike = await getUserAuthorisedRequest(token2)
+      .get(`/posts/${createdPost!.id}`)
+      .expect(STATUS_HTTP.OK_200);
+
+    expect(postByUser2ViewAfterDislike.body.extendedLikesInfo).toEqual({
+      likesCount: 1,
+      dislikesCount: 1,
+      myStatus: LIKE_STATUS.Dislike,
+      newestLikes: [{ addedAt: expect.stringMatching(ISO_STRING_REGEX), userId: user1!.id, login: user1!.login }],
+    });
+
+    await getUserAuthorisedRequest(token2)
+      .put(`/posts/${createdPost!.id}/like-status`)
+      .send({ likeStatus: LIKE_STATUS.None })
+      .expect(STATUS_HTTP.NO_CONTENT_204);
+
+    const postByUser2ViewAfterNoneStatus = await getUserAuthorisedRequest(token2)
+      .get(`/posts/${createdPost!.id}`)
+      .expect(STATUS_HTTP.OK_200);
+
+    expect(postByUser2ViewAfterNoneStatus.body.extendedLikesInfo).toEqual({
+      likesCount: 1,
+      dislikesCount: 0,
+      myStatus: LIKE_STATUS.None,
+      newestLikes: [{ addedAt: expect.stringMatching(ISO_STRING_REGEX), userId: user1!.id, login: user1!.login }],
     });
   });
 });

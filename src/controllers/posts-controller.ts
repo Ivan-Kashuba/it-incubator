@@ -33,7 +33,7 @@ export class PostsController {
     req: RequestWithQuery<{ title?: string } & Partial<PaginationPayload<PostViewModel>>>,
     res: Response<WithPagination<PostViewModel>>
   ) {
-    const userId = req.user.userId;
+    const userId = req?.user?.userId;
     const pagination: PaginationPayload<PostViewModel> = validatePayloadPagination(req.query, 'createdAt');
 
     const titleToFind = req?.query?.title || null;
@@ -49,6 +49,12 @@ export class PostsController {
 
     if (createdPostId) {
       const createdPost = await this.postsQueryRepository.findPostById(createdPostId, userId);
+
+      if (!createdPost) {
+        res.status(STATUS_HTTP.NOT_IMPLEMENTED_501);
+        return;
+      }
+
       res.status(STATUS_HTTP.CREATED_201).send(createdPost);
       return;
     }
